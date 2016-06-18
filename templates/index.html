@@ -1,0 +1,62 @@
+<!doctype html>
+<head>
+  <link rel="stylesheet"
+        href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css"
+        integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7"
+        crossorigin="anonymous">
+<title>Ratio of Twitter Friends and Followers</title>
+</head>
+<body>
+{% macro render_field(field) %}
+<dt>{{ field.label }}
+<dd>{{ field(**kwargs)|safe }}
+  {% if field.errors %}
+  <ul class=errors>
+    {% for error in field.errors %}
+    <li>{{ error }}</li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+</dd>
+{% endmacro %}
+
+<div class="container-fluid">
+  <div class="col-md-8 col-md-offset-1">
+  <h1>Ratio of Twitter Friends and Followers</h1>
+  <p class="lead">Estimate the gender ratio of those you follow&mdash;your
+  Twitter "friends"&mdash;and your followers.</p>
+  <form method="post">
+    <div class="form-group">
+      <label for="user_id">Twitter User:</label>
+      <div class="input-group col-xs-4">
+        <span class="input-group-addon">@</span>
+        <input type="text" class="form-control" id="user_id">
+      </div>
+    </div>
+    <button type="button" class="btn btn-primary">Analyze</button>
+  </form>
+
+  {% if error %}
+    <h2>Error</h2>
+    <p>{{ error }}</p>
+  {% endif %}
+
+  {% if form.user_id.data %}
+    <h2>Results for @{{ form.user_id.data }}</h2>
+    <table class="table table-striped">
+      <thead><tr><th>&nbsp;</th><th>men</th><th>women</th><th>undetermined</th></tr></thead>
+      {% for user_type, users in [('Friends', results.friends), ('Followers', results.followers)] %}
+      {% set men, women, undetermined = users %}
+      <tr><td>{{ user_type }}</td><td>{{ men }}</td><td>{{ women }}</td><td>{{ undetermined }}</td></tr>
+      <tr>
+        <td>&nbsp;</td>
+        <td>{{ (100 * men / (men + women))|round|int }}%</td>
+        <td>{{ (100 * women / (men + women))|round|int }}%</td>
+        <td>&nbsp;</td>
+      </tr>
+      {% endfor %}
+    </table>
+  {% endif %}
+  </div>
+</div>
+</body>
