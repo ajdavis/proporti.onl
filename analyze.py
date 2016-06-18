@@ -86,19 +86,26 @@ def analyze_followers(user_id):
 
 
 if __name__ == '__main__':
+    import argparse
+    parser = argparse.ArgumentParser(
+        description='Estimate gender ratio of Twitter friends and followers')
+    parser.add_argument('user_id', nargs=1)
+    args = parser.parse_args()
+    [user_id] = args.user_id
+
     print('\n')
     print("{:>10s}\t{:>10s}\t{:>10s}\t{:>10s}".format(
-        '', 'men', 'women', 'androgynous'))
+        '', 'men', 'women', 'undetermined'))
 
     for user_type, users in [
-        ('friends', analyze_friends('jessejiryudavis')),
-        ('followers', analyze_followers('jessejiryudavis')),
+        ('friends', analyze_friends(user_id)),
+        ('followers', analyze_followers(user_id)),
     ]:
         men, women, andy = users
         print("{:>10s}\t{:10d}\t{:10d}\t{:10d}".format(
             user_type, men, women, andy))
 
-        print("{:>10s}\t{:10f}\t{:10f}".format(
+        print("{:>10s}\t{:10.2f}\t{:10.2f}".format(
             '',
             100 * men / float(men + women),
             100 * women / float(men + women)))
