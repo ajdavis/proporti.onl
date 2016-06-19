@@ -4,8 +4,7 @@ from flask import Flask, flash, redirect,render_template, request, session
 from flask_oauth import OAuth
 from wtforms import Form, StringField
 
-from analyze import analyze_followers
-from analyze import analyze_friends
+from analyze import analyze_followers, analyze_friends, div
 
 app = Flask('twitter-gender-ratio')
 app.config['SECRET_KEY'] = 'f1e8922a-ea9a-4f6a-aad1-08071e10e0da'
@@ -93,7 +92,7 @@ def index():
                 error = exc
 
     return render_template('index.html',
-                           form=form, results=results, error=error)
+                           form=form, results=results, error=error, div=div)
 
 if __name__ == '__main__':
     import argparse

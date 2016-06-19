@@ -152,6 +152,13 @@ def analyze_followers(user_id, oauth_token, oauth_token_secret):
     return result
 
 
+def div(num, denom):
+    if denom:
+        return num / float(denom)
+
+    return 0
+
+
 if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser(
@@ -176,5 +183,5 @@ if __name__ == '__main__':
 
         print("{:>10s}\t{:10.2f}\t{:10.2f}".format(
             '',
-            100 * men / float(men + women),
-            100 * women / float(men + women)))
+            div(100 * men, men + women),
+            div(100 * women, men + women)))

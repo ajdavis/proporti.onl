@@ -96,8 +96,8 @@
       <tr><td>{{ user_type }}</td><td>{{ users.men }}</td><td>{{ users.women }}</td><td>{{ users.andy }}</td></tr>
       <tr>
         <td>&nbsp;</td>
-        <td>{{ (100 * users.men / (users.men + users.women))|round|int }}%</td>
-        <td>{{ (100 * users.women / (users.men + users.women))|round|int }}%</td>
+        <td>{{ div(100 * users.men, users.men + users.women)|round|int }}%</td>
+        <td>{{ div(100 * users.women, users.men + users.women)|round|int }}%</td>
         <td>&nbsp;</td>
       </tr>
       {% endfor %}
