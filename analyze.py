@@ -1,5 +1,6 @@
 import os
 import pickle
+import random
 import string
 
 import twitter                          # pip install python-twitter
@@ -71,24 +72,84 @@ def analyze_users(users, verbose=False):
     return men, women, andy
 
 
+def batch(it, size):
+    for i in range(0, len(it), size):
+        yield it[i:i + size]
+
+
 def get_twitter_api(oauth_token, oauth_token_secret):
     return twitter.Api(
         consumer_key="XpukwJDDIXoF1iBcTAJMXYthg",
         consumer_secret="wVuS3bj6hHCuoTkMEqAHjl0l2bODcLRIXkvs2JzOYxfGERYskq",
         access_token_key=oauth_token,
         access_token_secret=oauth_token_secret,
-        sleep_on_rate_limit=True,
-        debugHTTP=True)
+        sleep_on_rate_limit=True)
+
+
+MAX_GET_FRIEND_IDS_CALLS = 5
+MAX_GET_FOLLOWER_IDS_CALLS = 5
+MAX_USERS_LOOKUP_CALLS = 5
 
 
 def analyze_friends(user_id, oauth_token, oauth_token_secret):
+    result = {'ids_fetched': 0, 'ids_sampled': 0}
     api = get_twitter_api(oauth_token, oauth_token_secret)
-    return analyze_users(api.GetFriends(screen_name=user_id))
+
+    nxt = -1
+    friend_ids = []
+    for _ in range(MAX_GET_FRIEND_IDS_CALLS):
+        nxt, prev, data = api.GetFriendIDsPaged(screen_name=user_id,
+                                                cursor=nxt)
+        friend_ids.extend(data)
+        if nxt == 0 or nxt == prev:
+            break
+
+    result['ids_fetched'] = len(friend_ids)
+
+    # We can fetch users' details 100 at a time.
+    if len(friend_ids) > 100 * MAX_USERS_LOOKUP_CALLS:
+        friend_id_sample = random.sample(friend_ids,
+                                         100 * MAX_USERS_LOOKUP_CALLS)
+    else:
+        friend_id_sample = friend_ids
+
+    result['ids_sampled'] = len(friend_id_sample)
+    users = []
+    for ids in batch(friend_id_sample, 100):
+        users.extend(api.UsersLookup(ids))
+
+    result['men'], result['women'], result['andy'] = analyze_users(users)
+    return result
 
 
 def analyze_followers(user_id, oauth_token, oauth_token_secret):
+    result = {'ids_fetched': 0, 'ids_sampled': 0}
     api = get_twitter_api(oauth_token, oauth_token_secret)
-    return analyze_users(api.GetFollowers(screen_name=user_id))
+    nxt = -1
+    follower_ids = []
+    for _ in range(MAX_GET_FOLLOWER_IDS_CALLS):
+        nxt, prev, data = api.GetFollowerIDsPaged(screen_name=user_id,
+                                                  cursor=nxt)
+        follower_ids.extend(data)
+        if nxt == 0 or nxt == prev:
+            break
+
+    result['ids_fetched'] = len(follower_ids)
+
+    # We can fetch users' details 100 at a time.
+    if len(follower_ids) > 100 * MAX_USERS_LOOKUP_CALLS:
+        follower_id_sample = random.sample(follower_ids,
+                                           100 * MAX_USERS_LOOKUP_CALLS)
+    else:
+        follower_id_sample = follower_ids
+
+    result['ids_sampled'] = len(follower_id_sample)
+    users = []
+    for ids in batch(follower_id_sample, 100):
+        users.extend(api.UsersLookup(ids))
+
+    result['men'], result['women'], result['andy'] = analyze_users(users)
+    return result
 
 
 if __name__ == '__main__':
@@ -99,15 +160,18 @@ if __name__ == '__main__':
     args = parser.parse_args()
     [user_id] = args.user_id
 
+    tok = "131044458-jjzsC9RNoWkICI2C622VFO3u2XETYRKLY4WtDSR6"
+    tok_secret = "UBkM1GOxmELqKvuUa8qXQ8qQJkYcmTq3644hs3w8fKNyk"
+
     print('\n')
     print("{:>10s}\t{:>10s}\t{:>10s}\t{:>10s}".format(
         '', 'men', 'women', 'undetermined'))
 
     for user_type, users in [
-        ('friends', analyze_friends(user_id)),
-        ('followers', analyze_followers(user_id)),
+        ('friends', analyze_friends(user_id, tok, tok_secret)),
+        ('followers', analyze_followers(user_id, tok, tok_secret)),
     ]:
-        men, women, andy = users
+        men, women, andy = users['men'], users['women'], users['andy']
         print("{:>10s}\t{:10d}\t{:10d}\t{:10d}".format(
             user_type, men, women, andy))
 

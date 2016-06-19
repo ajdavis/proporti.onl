@@ -89,15 +89,15 @@
 
   {% if results %}
     <h2>Results for @{{ form.user_id.data }}</h2>
+    <p>Sampled {{ results.friends.ids_sampled }} friends and {{ results.followers.ids_sampled }} followers.</p>
     <table class="table table-striped">
       <thead><tr><th>&nbsp;</th><th>men</th><th>women</th><th>undetermined</th></tr></thead>
       {% for user_type, users in [('Friends', results.friends), ('Followers', results.followers)] %}
-      {% set men, women, undetermined = users %}
-      <tr><td>{{ user_type }}</td><td>{{ men }}</td><td>{{ women }}</td><td>{{ undetermined }}</td></tr>
+      <tr><td>{{ user_type }}</td><td>{{ users.men }}</td><td>{{ users.women }}</td><td>{{ users.andy }}</td></tr>
       <tr>
         <td>&nbsp;</td>
-        <td>{{ (100 * men / (men + women))|round|int }}%</td>
-        <td>{{ (100 * women / (men + women))|round|int }}%</td>
+        <td>{{ (100 * users.men / (users.men + users.women))|round|int }}%</td>
+        <td>{{ (100 * users.women / (users.men + users.women))|round|int }}%</td>
         <td>&nbsp;</td>
       </tr>
       {% endfor %}

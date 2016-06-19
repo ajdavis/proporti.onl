@@ -68,8 +68,16 @@ def index():
     if request.method == 'POST' and form.validate() and form.user_id.data:
         if app.config['DRY_RUN']:
             time.sleep(2)
-            results = {'friends': (150, 25, 200),
-                       'followers': (200, 20, 250)}
+            results = {'friends': {'ids_fetched': 0,
+                                   'ids_sampled': 0,
+                                   'men': 200,
+                                   'women': 50,
+                                   'andy': 150},
+                       'followers': {'ids_fetched': 0,
+                                     'ids_sampled': 0,
+                                     'men': 200,
+                                     'women': 50,
+                                     'andy': 150}}
         else:
             try:
                 results = {'friends': analyze_friends(form.user_id.data,

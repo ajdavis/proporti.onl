@@ -35,5 +35,3 @@ Start a Flask server:
 ```
 python2.7 server.py 80
 ```
-
-TODO: This deployment is very prone to Twitter rate-limiting.
