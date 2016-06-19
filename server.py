@@ -8,6 +8,9 @@ from analyze import analyze_followers
 from analyze import analyze_friends
 
 app = Flask('twitter-gender-ratio')
+app.config['SECRET_KEY'] = 'f1e8922a-ea9a-4f6a-aad1-08071e10e0da'
+app.config['DRY_RUN'] = False
+
 oauth = OAuth()
 twitter = oauth.remote_app(
     'twitter',
@@ -102,5 +105,4 @@ if __name__ == '__main__':
     [port] = args.port
 
     app.config['DRY_RUN'] = args.dry_run
-    app.config['SECRET_KEY'] = 'f1e8922a-ea9a-4f6a-aad1-08071e10e0da'
     app.run(port=port, debug=args.debug)
