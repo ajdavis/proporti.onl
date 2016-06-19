@@ -7,12 +7,6 @@ import sexmachine.detector as gender    # pip install SexMachine
 from unidecode import unidecode         # pip install unidecode
 
 
-api = twitter.Api(
-    consumer_key="XpukwJDDIXoF1iBcTAJMXYthg",
-    consumer_secret="wVuS3bj6hHCuoTkMEqAHjl0l2bODcLRIXkvs2JzOYxfGERYskq",
-    access_token_key="131044458-jjzsC9RNoWkICI2C622VFO3u2XETYRKLY4WtDSR6",
-    access_token_secret="UBkM1GOxmELqKvuUa8qXQ8qQJkYcmTq3644hs3w8fKNyk")
-
 if os.path.exists('detector.pickle'):
     detector = pickle.load(open('detector.pickle', 'rb'))
 else:
@@ -77,12 +71,24 @@ def analyze_users(users, verbose=False):
     return men, women, andy
 
 
-def analyze_friends(user_id):
-    return analyze_users(api.GetFriends(user_id))
+def analyze_friends(user_id, oauth_token, oauth_token_secret):
+    api = twitter.Api(
+        consumer_key="XpukwJDDIXoF1iBcTAJMXYthg",
+        consumer_secret="wVuS3bj6hHCuoTkMEqAHjl0l2bODcLRIXkvs2JzOYxfGERYskq",
+        access_token_key=oauth_token,
+        access_token_secret=oauth_token_secret)
+
+    return analyze_users(api.GetFriends(screen_name=user_id))
 
 
-def analyze_followers(user_id):
-    return analyze_users(api.GetFollowers(user_id))
+def analyze_followers(user_id, oauth_token, oauth_token_secret):
+    api = twitter.Api(
+        consumer_key="XpukwJDDIXoF1iBcTAJMXYthg",
+        consumer_secret="wVuS3bj6hHCuoTkMEqAHjl0l2bODcLRIXkvs2JzOYxfGERYskq",
+        access_token_key=oauth_token,
+        access_token_secret=oauth_token_secret)
+
+    return analyze_users(api.GetFollowers(screen_name=user_id))
 
 
 if __name__ == '__main__':

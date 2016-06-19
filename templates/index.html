@@ -56,23 +56,31 @@
 
 <div class="container-fluid">
   <div class="col-md-8 col-md-offset-1">
+  {% if session.get('twitter_user') %}
+    <h4>Hello, @{{ session.twitter_user }}.</h4>
+    <p><a href="/logout">Deauthorize this application with Twitter.</a></p>
+  {% endif %}
   <h1>Gender Ratio of Twitter Friends and Followers</h1>
-  <p class="lead">Estimate the gender ratio of those you follow&mdash;your
-  Twitter "friends"&mdash;and your followers.</p>
-  <form method="post" onsubmit="return analyze_click()">
-    <div class="form-group">
-      <label for="user_id">Twitter User:</label>
-      <div class="input-group col-xs-4">
-        <span class="input-group-addon">@</span>
-        <input type="text" class="form-control" name="user_id" id="user_id"
-          {% if form.user_id.data %} value="{{ form.user_id.data }}"{% endif %}>
+  <p class="lead">Estimate the gender ratio of your followers and those you follow.</p>
+
+  {% if session.get('twitter_user') %}
+    <form method="post" onsubmit="return analyze_click()">
+      <div class="form-group">
+        <label for="user_id">Twitter User:</label>
+        <div class="input-group col-xs-4">
+          <span class="input-group-addon">@</span>
+          <input type="text" class="form-control" name="user_id" id="user_id"
+            {% if form.user_id.data %} value="{{ form.user_id.data }}"{% endif %}>
+        </div>
       </div>
-    </div>
-    <button id="analyze-button" type="submit" class="btn btn-primary">
-      <span id="analyze-loading" style="display: none;"><span class="glyphicon glyphicon-refresh spinning"></span> Loading...</span>
-      <span id="analyze-button-text" >Analyze</span>
-    </button>
-  </form>
+      <button id="analyze-button" type="submit" class="btn btn-primary">
+        <span id="analyze-loading" style="display: none;"><span class="glyphicon glyphicon-refresh spinning"></span> Loading...</span>
+        <span id="analyze-button-text" >Analyze</span>
+      </button>
+    </form>
+  {% else %}
+    <a href="/login" class="btn btn-primary">Log in with Twitter</a>
+  {% endif %}
 
   {% if error %}
     <h2>Error</h2>
