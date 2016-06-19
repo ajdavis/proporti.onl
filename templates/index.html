@@ -64,7 +64,8 @@
       <label for="user_id">Twitter User:</label>
       <div class="input-group col-xs-4">
         <span class="input-group-addon">@</span>
-        <input type="text" class="form-control" name="user_id" id="user_id">
+        <input type="text" class="form-control" name="user_id" id="user_id"
+          {% if form.user_id.data %} value="{{ form.user_id.data }}"{% endif %}>
       </div>
     </div>
     <button id="analyze-button" type="submit" class="btn btn-primary">
