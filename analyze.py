@@ -2,9 +2,11 @@ import os
 import pickle
 import random
 import string
+import webbrowser
 
 import twitter                          # pip install python-twitter
 import sexmachine.detector as gender    # pip install SexMachine
+from requests_oauthlib import OAuth1Session
 from unidecode import unidecode         # pip install unidecode
 
 
@@ -79,8 +81,8 @@ def batch(it, size):
 
 def get_twitter_api(oauth_token, oauth_token_secret):
     return twitter.Api(
-        consumer_key="XpukwJDDIXoF1iBcTAJMXYthg",
-        consumer_secret="wVuS3bj6hHCuoTkMEqAHjl0l2bODcLRIXkvs2JzOYxfGERYskq",
+        consumer_key=os.environ['CONSUMER_KEY'],
+        consumer_secret=os.environ['CONSUMER_SECRET'],
         access_token_key=oauth_token,
         access_token_secret=oauth_token_secret,
         sleep_on_rate_limit=True)
@@ -159,6 +161,62 @@ def div(num, denom):
     return 0
 
 
+# From https://github.com/bear/python-twitter/blob/master/get_access_token.py
+def get_access_token(consumer_key, consumer_secret):
+    REQUEST_TOKEN_URL = 'https://api.twitter.com/oauth/request_token'
+    ACCESS_TOKEN_URL = 'https://api.twitter.com/oauth/access_token'
+    AUTHORIZATION_URL = 'https://api.twitter.com/oauth/authorize'
+
+    oauth_client = OAuth1Session(consumer_key, client_secret=consumer_secret,
+                                 callback_uri='oob')
+
+    print('\nRequesting temp token from Twitter...\n')
+
+    try:
+        resp = oauth_client.fetch_request_token(REQUEST_TOKEN_URL)
+    except ValueError as e:
+        raise ValueError(
+            'Invalid response from Twitter requesting temp token: {0}'.format(
+                e))
+
+    url = oauth_client.authorization_url(AUTHORIZATION_URL)
+
+    print('I will try to start a browser to visit the following Twitter page '
+          'if a browser will not start, copy the URL to your browser '
+          'and retrieve the pincode to be used '
+          'in the next step to obtaining an Authentication Token: \n'
+          '\n\t{0}'.format(url))
+
+    webbrowser.open(url)
+    pincode = raw_input('\nEnter your pincode? ')
+
+    print('\nGenerating and signing request for an access token...\n')
+
+    oauth_client = OAuth1Session(consumer_key, client_secret=consumer_secret,
+                                 resource_owner_key=resp.get('oauth_token'),
+                                 resource_owner_secret=resp.get(
+                                     'oauth_token_secret'),
+                                 verifier=pincode)
+    try:
+        resp = oauth_client.fetch_access_token(ACCESS_TOKEN_URL)
+    except ValueError as e:
+        msg = ('Invalid response from Twitter requesting '
+               'temp token: {0}').format(e)
+        raise ValueError(msg)
+    #
+    # print('''Your tokens/keys are as follows:
+    #     consumer_key         = {ck}
+    #     consumer_secret      = {cs}
+    #     access_token_key     = {atk}
+    #     access_token_secret  = {ats}'''.format(
+    #     ck=consumer_key,
+    #     cs=consumer_secret,
+    #     atk=resp.get('oauth_token'),
+    #     ats=resp.get('oauth_token_secret')))
+
+    return resp.get('oauth_token'), resp.get('oauth_token_secret')
+
+
 if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser(
@@ -167,8 +225,13 @@ if __name__ == '__main__':
     args = parser.parse_args()
     [user_id] = args.user_id
 
-    tok = "131044458-jjzsC9RNoWkICI2C622VFO3u2XETYRKLY4WtDSR6"
-    tok_secret = "UBkM1GOxmELqKvuUa8qXQ8qQJkYcmTq3644hs3w8fKNyk"
+    consumer_key = (os.environ['CONSUMER_KEY'] or
+                    raw_input('Enter your consumer key: '))
+
+    consumer_secret = (os.environ['CONSUMER_SECRET'] or
+                       raw_input('Enter your consumer secret: '))
+
+    tok, tok_secret = get_access_token(consumer_key, consumer_secret)
 
     print("{:>10s}\t{:>10s}\t{:>10s}\t{:>10s}".format(
         '', 'men', 'women', 'undetermined'))

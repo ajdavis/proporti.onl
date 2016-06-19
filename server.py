@@ -1,3 +1,4 @@
+import os
 import time
 
 from flask import Flask, flash, redirect,render_template, request, session
@@ -7,7 +8,7 @@ from wtforms import Form, StringField
 from analyze import analyze_followers, analyze_friends, div
 
 app = Flask('twitter-gender-ratio')
-app.config['SECRET_KEY'] = 'f1e8922a-ea9a-4f6a-aad1-08071e10e0da'
+app.config['SECRET_KEY'] = os.environ['COOKIE_SECRET']
 app.config['DRY_RUN'] = False
 
 oauth = OAuth()
@@ -17,8 +18,8 @@ twitter = oauth.remote_app(
     request_token_url='https://api.twitter.com/oauth/request_token',
     access_token_url='https://api.twitter.com/oauth/access_token',
     authorize_url='https://api.twitter.com/oauth/authenticate',
-    consumer_key="XpukwJDDIXoF1iBcTAJMXYthg",
-    consumer_secret="wVuS3bj6hHCuoTkMEqAHjl0l2bODcLRIXkvs2JzOYxfGERYskq")
+    consumer_key=os.environ['CONSUMER_KEY'],
+    consumer_secret=os.environ['CONSUMER_SECRET'])
 
 
 @twitter.tokengetter
@@ -89,6 +90,8 @@ def index():
                                                           oauth_token,
                                                           oauth_token_secret)}
             except Exception as exc:
+                import traceback
+                traceback.print_exc()
                 error = exc
 
     return render_template('index.html',
