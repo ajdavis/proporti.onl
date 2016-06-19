@@ -163,7 +163,6 @@ if __name__ == '__main__':
     tok = "131044458-jjzsC9RNoWkICI2C622VFO3u2XETYRKLY4WtDSR6"
     tok_secret = "UBkM1GOxmELqKvuUa8qXQ8qQJkYcmTq3644hs3w8fKNyk"
 
-    print('\n')
     print("{:>10s}\t{:>10s}\t{:>10s}\t{:>10s}".format(
         '', 'men', 'women', 'undetermined'))
 
