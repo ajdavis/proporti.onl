@@ -71,23 +71,23 @@ def analyze_users(users, verbose=False):
     return men, women, andy
 
 
-def analyze_friends(user_id, oauth_token, oauth_token_secret):
-    api = twitter.Api(
+def get_twitter_api(oauth_token, oauth_token_secret):
+    return twitter.Api(
         consumer_key="XpukwJDDIXoF1iBcTAJMXYthg",
         consumer_secret="wVuS3bj6hHCuoTkMEqAHjl0l2bODcLRIXkvs2JzOYxfGERYskq",
         access_token_key=oauth_token,
-        access_token_secret=oauth_token_secret)
+        access_token_secret=oauth_token_secret,
+        sleep_on_rate_limit=True,
+        debugHTTP=True)
 
+
+def analyze_friends(user_id, oauth_token, oauth_token_secret):
+    api = get_twitter_api(oauth_token, oauth_token_secret)
     return analyze_users(api.GetFriends(screen_name=user_id))
 
 
 def analyze_followers(user_id, oauth_token, oauth_token_secret):
-    api = twitter.Api(
-        consumer_key="XpukwJDDIXoF1iBcTAJMXYthg",
-        consumer_secret="wVuS3bj6hHCuoTkMEqAHjl0l2bODcLRIXkvs2JzOYxfGERYskq",
-        access_token_key=oauth_token,
-        access_token_secret=oauth_token_secret)
-
+    api = get_twitter_api(oauth_token, oauth_token_secret)
     return analyze_users(api.GetFollowers(screen_name=user_id))
 
 
