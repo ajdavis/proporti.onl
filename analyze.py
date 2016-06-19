@@ -88,7 +88,7 @@ def get_twitter_api(oauth_token, oauth_token_secret):
 
 MAX_GET_FRIEND_IDS_CALLS = 5
 MAX_GET_FOLLOWER_IDS_CALLS = 5
-MAX_USERS_LOOKUP_CALLS = 5
+MAX_USERS_LOOKUP_CALLS = 10
 
 
 def analyze_friends(user_id, oauth_token, oauth_token_secret):
