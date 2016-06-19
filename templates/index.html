@@ -61,7 +61,7 @@
     <p><a href="/logout">Deauthorize this application with Twitter.</a></p>
   {% endif %}
   <h1>Gender Ratio of Twitter Friends and Followers</h1>
-  <p class="lead">Estimate the gender ratio of your followers and those you follow.</p>
+  <p class="lead">Estimate the gender ratio of your followers and those you follow, based on their first names.</p>
 
   {% if session.get('twitter_user') %}
     <form method="post" onsubmit="return analyze_click()">
