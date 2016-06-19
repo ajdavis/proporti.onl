@@ -16,12 +16,12 @@ def index():
     form = AnalyzeForm(request.form)
     results = {}
     error = None
-    if request.method == 'POST' and form.validate():
         try:
             results = {'friends': analyze_friends(form.user_id),
                        'followers': analyze_followers(form.user_id)}
         except Exception as exc:
             error = exc
+    if request.method == 'POST' and form.validate() and form.user_id.data:
 
     return render_template('index.html',
                            form=form, results=results, error=error)

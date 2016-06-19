@@ -5,6 +5,22 @@
         integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7"
         crossorigin="anonymous">
 <title>Ratio of Twitter Friends and Followers</title>
+<style type="text/css">
+.glyphicon.spinning {
+  animation: spin 1s infinite linear;
+  -webkit-animation: spin2 1s infinite linear;
+}
+
+@keyframes spin {
+    from { transform: scale(1) rotate(0deg); }
+    to { transform: scale(1) rotate(360deg); }
+}
+
+@-webkit-keyframes spin2 {
+    from { -webkit-transform: rotate(0deg); }
+    to { -webkit-transform: rotate(360deg); }
+}
+</style>
 </head>
 <body>
 {% macro render_field(field) %}
@@ -20,20 +36,41 @@
 </dd>
 {% endmacro %}
 
+<script type="application/javascript">
+  function analyze_click() {
+    var button = document.getElementById("analyze-button");
+    button.disabled = true;
+
+    var user_id = document.getElementById("user_id");
+    user_id.readOnly = true;
+
+    var text = document.getElementById("analyze-button-text");
+    text.style.display = 'none';
+
+    var loading = document.getElementById("analyze-loading");
+    loading.style.display = 'block';
+
+    return true;
+  }
+</script>
+
 <div class="container-fluid">
   <div class="col-md-8 col-md-offset-1">
   <h1>Ratio of Twitter Friends and Followers</h1>
   <p class="lead">Estimate the gender ratio of those you follow&mdash;your
   Twitter "friends"&mdash;and your followers.</p>
-  <form method="post">
+  <form method="post" onsubmit="return analyze_click()">
     <div class="form-group">
       <label for="user_id">Twitter User:</label>
       <div class="input-group col-xs-4">
         <span class="input-group-addon">@</span>
-        <input type="text" class="form-control" id="user_id">
+        <input type="text" class="form-control" name="user_id" id="user_id">
       </div>
     </div>
-    <button type="button" class="btn btn-primary">Analyze</button>
+    <button id="analyze-button" type="submit" class="btn btn-primary">
+      <span id="analyze-loading" style="display: none;"><span class="glyphicon glyphicon-refresh spinning"></span>Loading...</span>
+      <span id="analyze-button-text" >Analyze</span>
+    </button>
   </form>
 
   {% if error %}
