@@ -40,7 +40,7 @@ def analyze_users(users, verbose=False):
 
     for user in users:
         for name, country in [
-            (user.name.split()[0], 'usa'),
+            (split(user.name), 'usa'),
             (user.name, 'usa'),
             (split(unidecode(user.name)), 'usa'),
             (unidecode(user.name), 'usa'),
