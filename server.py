@@ -11,6 +11,8 @@ app = Flask('twitter-gender-ratio')
 app.config['SECRET_KEY'] = os.environ['COOKIE_SECRET']
 app.config['DRY_RUN'] = False
 
+TRACKING_ID = os.environ.get('TRACKING_ID')
+
 oauth = OAuth()
 twitter = oauth.remote_app(
     'twitter',
@@ -96,7 +98,8 @@ def index():
                 error = exc
 
     return render_template('index.html',
-                           form=form, results=results, error=error, div=div)
+                           form=form, results=results, error=error, div=div,
+                           TRACKING_ID=TRACKING_ID)
 
 if __name__ == '__main__':
     import argparse
