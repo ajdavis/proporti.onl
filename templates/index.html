@@ -7,6 +7,18 @@
 <title>My Ratio: Gender of Twitter Friends and Followers</title>
 <link rel="shortcut icon" href="http://www.myrat.io/static/favicon.png" type="image/png" />
 <style type="text/css">
+.alert-container {
+  max-height: 100px;
+  overflow: hidden;
+	transition-property: all;
+	transition-duration: .5s;
+	transition-timing-function: cubic-bezier(0, 1, 0.5, 1);
+}
+
+.alert-container-disappear {
+  max-height: 0;
+}
+
 .glyphicon.spinning {
   animation: spin 1s infinite linear;
   -webkit-animation: spin2 1s infinite linear;
@@ -38,6 +50,11 @@
 {% endmacro %}
 
 <script type="application/javascript">
+  function close_alert(target) {
+    var alertDiv = target.parentElement.parentElement;
+    alertDiv.classList.add('alert-container-disappear');
+  }
+  
   function analyze_click() {
     var button = document.getElementById("analyze-button");
     button.disabled = true;
@@ -53,10 +70,36 @@
 
     return true;
   }
+
+  function close_alerts() {
+    var alerts = document.getElementsByClassName('alert-container');
+    for (var i = 0; i < alerts.length; i++) {
+      alerts[i].classList.add('alert-container-disappear');
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(close_alerts, 2000);
+  }, false);
 </script>
 
 <div class="container-fluid">
   <div class="col-md-8 col-md-offset-1">
+
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      {% for message in messages %}
+        <div class="alert-container">
+        <div class="alert alert-info">
+          <button type="button" class="close" onclick="close_alert(this)">&times;</button>
+          {{ message }}
+        </div>
+        </div>
+    {% endfor %}
+      </ul>
+    {% endif %}
+  {% endwith %}
+
   <h1>My Ra<span style="letter-spacing: -0.02em">t</span><span style="color: #b4b4b4; letter-spacing: -0.06em"">.</span>io</h1>
   <p class="lead">Estimate the gender ratio of your followers and those you follow, based on their first names.</p>
 

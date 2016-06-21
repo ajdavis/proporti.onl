@@ -41,6 +41,7 @@ def login():
 def logout():
     session.pop('twitter_token')
     session.pop('twitter_user')
+    flash(u'Logged out.')
     return redirect('/')
 
 
@@ -54,7 +55,7 @@ def oauth_authorized(resp):
 
     session['twitter_token'] = (resp['oauth_token'], resp['oauth_token_secret'])
     session['twitter_user'] = resp['screen_name']
-    flash('You were signed in as %s' % resp['screen_name'])
+    flash(u'You were signed in as %s' % resp['screen_name'])
     return redirect(next_url)
 
 
