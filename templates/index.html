@@ -4,7 +4,8 @@
         href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css"
         integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7"
         crossorigin="anonymous">
-<title>Gender Ratio of Twitter Friends and Followers</title>
+<title>My Ratio: Gender of Twitter Friends and Followers</title>
+<link rel="shortcut icon" href="http://www.myrat.io/static/favicon.png" type="image/png" />
 <style type="text/css">
 .glyphicon.spinning {
   animation: spin 1s infinite linear;
@@ -56,21 +57,20 @@
 
 <div class="container-fluid">
   <div class="col-md-8 col-md-offset-1">
-  {% if session.get('twitter_user') %}
-    <h4>Hello, @{{ session.twitter_user }}.</h4>
-    <p><a href="/logout">Deauthorize this application with Twitter.</a></p>
-  {% endif %}
-  <h1>Gender Ratio of Twitter Friends and Followers</h1>
+  <h1>My Ra<span style="letter-spacing: -0.02em">t</span><span style="color: #b4b4b4; letter-spacing: -0.06em"">.</span>io</h1>
   <p class="lead">Estimate the gender ratio of your followers and those you follow, based on their first names.</p>
 
   {% if session.get('twitter_user') %}
+    <h4>Hello, @{{ session.twitter_user }}.</h4>
+    <p><a href="/logout">Deauthorize this application with Twitter.</a></p>
+    <hr>
     <form method="post" onsubmit="return analyze_click()">
       <div class="form-group">
         <label for="user_id">Twitter User:</label>
         <div class="input-group col-xs-4">
           <span class="input-group-addon">@</span>
           <input type="text" class="form-control" name="user_id" id="user_id"
-            {% if form.user_id.data %} value="{{ form.user_id.data }}"{% endif %}>
+            value="{{ form.user_id.data|default(session.twitter_user, true) }}">
         </div>
       </div>
       <button id="analyze-button" type="submit" class="btn btn-primary">
