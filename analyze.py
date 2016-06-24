@@ -79,10 +79,11 @@ def batch(it, size):
         yield it[i:i + size]
 
 
-def get_twitter_api(oauth_token, oauth_token_secret):
+def get_twitter_api(consumer_key, consumer_secret,
+                    oauth_token, oauth_token_secret):
     return twitter.Api(
-        consumer_key=os.environ['CONSUMER_KEY'],
-        consumer_secret=os.environ['CONSUMER_SECRET'],
+        consumer_key=consumer_key,
+        consumer_secret=consumer_secret,
         access_token_key=oauth_token,
         access_token_secret=oauth_token_secret,
         sleep_on_rate_limit=True)
@@ -93,9 +94,11 @@ MAX_GET_FOLLOWER_IDS_CALLS = 5
 MAX_USERS_LOOKUP_CALLS = 10
 
 
-def analyze_friends(user_id, oauth_token, oauth_token_secret):
+def analyze_friends(user_id, consumer_key, consumer_secret,
+                    oauth_token, oauth_token_secret):
     result = {'ids_fetched': 0, 'ids_sampled': 0}
-    api = get_twitter_api(oauth_token, oauth_token_secret)
+    api = get_twitter_api(consumer_key, consumer_secret,
+                          oauth_token, oauth_token_secret)
 
     nxt = -1
     friend_ids = []
@@ -124,9 +127,11 @@ def analyze_friends(user_id, oauth_token, oauth_token_secret):
     return result
 
 
-def analyze_followers(user_id, oauth_token, oauth_token_secret):
+def analyze_followers(user_id, consumer_key, consumer_secret,
+                      oauth_token, oauth_token_secret):
     result = {'ids_fetched': 0, 'ids_sampled': 0}
-    api = get_twitter_api(oauth_token, oauth_token_secret)
+    api = get_twitter_api(consumer_key, consumer_secret,
+                          oauth_token, oauth_token_secret)
     nxt = -1
     follower_ids = []
     for _ in range(MAX_GET_FOLLOWER_IDS_CALLS):
@@ -225,10 +230,10 @@ if __name__ == '__main__':
     args = parser.parse_args()
     [user_id] = args.user_id
 
-    consumer_key = (os.environ['CONSUMER_KEY'] or
+    consumer_key = (os.environ.get('CONSUMER_KEY') or
                     raw_input('Enter your consumer key: '))
 
-    consumer_secret = (os.environ['CONSUMER_SECRET'] or
+    consumer_secret = (os.environ.get('CONSUMER_SECRET') or
                        raw_input('Enter your consumer secret: '))
 
     tok, tok_secret = get_access_token(consumer_key, consumer_secret)
@@ -237,8 +242,10 @@ if __name__ == '__main__':
         '', 'men', 'women', 'undetermined'))
 
     for user_type, users in [
-        ('friends', analyze_friends(user_id, tok, tok_secret)),
-        ('followers', analyze_followers(user_id, tok, tok_secret)),
+        ('friends', analyze_friends(user_id, consumer_key, consumer_secret,
+                                    tok, tok_secret)),
+        ('followers', analyze_followers(user_id, consumer_key, consumer_secret,
+                                        tok, tok_secret)),
     ]:
         men, women, andy = users['men'], users['women'], users['andy']
         print("{:>10s}\t{:10d}\t{:10d}\t{:10d}".format(
