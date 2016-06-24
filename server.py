@@ -3,6 +3,7 @@ import time
 
 from flask import Flask, flash, redirect,render_template, request, session
 from flask_oauth import OAuth
+from flask_sslify import SSLify
 from wtforms import Form, StringField
 
 from analyze import analyze_followers, analyze_friends, div
@@ -100,6 +101,10 @@ def index():
     return render_template('index.html',
                            form=form, results=results, error=error, div=div,
                            TRACKING_ID=TRACKING_ID)
+
+
+# Force SSL.
+sslify = SSLify(app)
 
 if __name__ == '__main__':
     import argparse
