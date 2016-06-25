@@ -239,7 +239,7 @@ if __name__ == '__main__':
     tok, tok_secret = get_access_token(consumer_key, consumer_secret)
 
     print("{:>10s}\t{:>10s}\t{:>10s}\t{:>10s}".format(
-        '', 'men', 'women', 'undetermined'))
+        '', 'men', 'women', 'nonbinary/unknown'))
 
     for user_type, users in [
         ('friends', analyze_friends(user_id, consumer_key, consumer_secret,
