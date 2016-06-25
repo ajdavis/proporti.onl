@@ -150,7 +150,8 @@ def analyze_friends(user_id, consumer_key, consumer_secret,
     for ids in batch(friend_id_sample, 100):
         users.extend(api.UsersLookup(ids))
 
-    return analyze_users(users)
+    result.update(analyze_users(users))
+    return result
 
 
 def analyze_followers(user_id, consumer_key, consumer_secret,
@@ -181,7 +182,8 @@ def analyze_followers(user_id, consumer_key, consumer_secret,
     for ids in batch(follower_id_sample, 100):
         users.extend(api.UsersLookup(ids))
 
-    return analyze_users(users)
+    result.update(analyze_users(users))
+    return result
 
 
 def div(num, denom):
