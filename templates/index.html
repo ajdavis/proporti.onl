@@ -101,7 +101,7 @@
   {% endwith %}
 
   <h1>My Ra<span style="letter-spacing: -0.02em">t</span><span style="color: #b4b4b4; letter-spacing: -0.06em"">.</span>io</h1>
-  <p class="lead">Estimate the gender ratio of your followers and those you follow, based on their first names.</p>
+  <p class="lead">Estimate the gender ratio of your followers and those you follow, based on their profile descriptions or first names.</p>
 
   {% if session.get('twitter_user') %}
     <h4>Hello, @{{ session.twitter_user }}.</h4>
@@ -133,14 +133,21 @@
   {% if results %}
     <h2>Results for @{{ form.user_id.data }}</h2>
     <p>Sampled {{ results.friends.ids_sampled }} friends and {{ results.followers.ids_sampled }} followers.</p>
-    <table class="table table-striped">
-      <thead><tr><th>&nbsp;</th><th>men</th><th>women</th><th>nonbinary,<br>no gender,<br>unknown</th></tr></thead>
+    <table class="table table-striped" style="table-layout: fixed;">
+      <thead><tr>
+        <th class="col-md-1">&nbsp;</th>
+        <th class="col-md-1">nonbinary</th>
+        <th class="col-md-1">men</th>
+        <th class="col-md-1">women</th>
+        <th class="col-md-1">no gender,<br>unknown</th>
+      </tr></thead>
       {% for user_type, users in [('Friends you follow', results.friends), ('Followers', results.followers)] %}
-      <tr><td>{{ user_type }}</td><td>{{ users.men }}</td><td>{{ users.women }}</td><td>{{ users.andy }}</td></tr>
+      <tr><td>{{ user_type }}</td><td>{{ users.nonbinary }}</td><td>{{ users.men }}</td><td>{{ users.women }}</td><td>{{ users.andy }}</td></tr>
       <tr>
         <td>&nbsp;</td>
-        <td>{{ div(100 * users.men, users.men + users.women)|round|int }}%</td>
-        <td>{{ div(100 * users.women, users.men + users.women)|round|int }}%</td>
+        <td>{{ div(100 * users.nonbinary, users.nonbinary + users.men + users.women)|round|int }}%</td>
+        <td>{{ div(100 * users.men, users.nonbinary + users.men + users.women)|round|int }}%</td>
+        <td>{{ div(100 * users.women, users.nonbinary + users.men + users.women)|round|int }}%</td>
         <td>&nbsp;</td>
       </tr>
       {% endfor %}

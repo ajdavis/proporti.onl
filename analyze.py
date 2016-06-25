@@ -1,6 +1,7 @@
 import os
 import pickle
 import random
+import re
 import string
 import webbrowser
 
@@ -33,45 +34,71 @@ def rm_punctuation(s):
     return string.translate(s.encode("utf-8"), None, nonletter).strip()
 
 
+def declared_gender(description):
+    dl = description.lower()
+    if ('pronoun.is' in dl and
+            'pronoun.is/she' not in dl and
+            'pronoun.is/he' not in dl):
+        return 'nonbinary'
+
+    for p, g in [('they', 'nonbinary'),
+                 ('she', 'female'),
+                 ('he', 'male')]:
+        for text in (r'\b' + p + '\b',
+                     r'\b' + p + '/',
+                     r'\b' + p + ' /',
+                     r'pronoun\.is/' + p):
+            if re.compile(text).search(dl):
+                return g
+
+    return 'andy'  # Don't know.
+
+
 def analyze_users(users, verbose=False):
-    men = 0
-    women = 0
-    andy = 0
+    result = {'nonbinary': 0,
+              'men': 0,
+              'women': 0,
+              'andy': 0}
 
     for user in users:
-        for name, country in [
-            (split(user.name), 'usa'),
-            (user.name, 'usa'),
-            (split(unidecode(user.name)), 'usa'),
-            (unidecode(user.name), 'usa'),
-            (split(user.name), None),
-            (user.name, None),
-            (unidecode(user.name), None),
-            (split(unidecode(user.name)), None),
-        ]:
-            g = detector.get_gender(name, country)
-            if g != 'andy':
-                # Not androgynous.
-                break
+        g = declared_gender(user.description)
+        if g == 'andy':
+            # We haven't found a preferred pronoun.
+            for name, country in [
+                (split(user.name), 'usa'),
+                (user.name, 'usa'),
+                (split(unidecode(user.name)), 'usa'),
+                (unidecode(user.name), 'usa'),
+                (split(user.name), None),
+                (user.name, None),
+                (unidecode(user.name), None),
+                (split(unidecode(user.name)), None),
+            ]:
+                g = detector.get_gender(name, country)
+                if g != 'andy':
+                    # Not androgynous.
+                    break
 
-            g = detector.get_gender(rm_punctuation(name), country)
-            if g != 'andy':
-                # Not androgynous.
-                break
+                g = detector.get_gender(rm_punctuation(name), country)
+                if g != 'andy':
+                    # Not androgynous.
+                    break
 
         if verbose:
             print("{:20s}\t{:40s}\t{:s}".format(
                 user.screen_name.encode('utf-8'),
                 user.name.encode('utf-8'), g))
 
-        if g == 'male':
-            men += 1
+        if g == 'nonbinary':
+            result['nonbinary'] += 1
+        elif g == 'male':
+            result['men'] += 1
         elif g == 'female':
-            women += 1
+            result['women'] += 1
         else:
-            andy += 1
+            result['andy'] += 1
 
-    return men, women, andy
+    return result
 
 
 def batch(it, size):
@@ -123,8 +150,7 @@ def analyze_friends(user_id, consumer_key, consumer_secret,
     for ids in batch(friend_id_sample, 100):
         users.extend(api.UsersLookup(ids))
 
-    result['men'], result['women'], result['andy'] = analyze_users(users)
-    return result
+    return analyze_users(users)
 
 
 def analyze_followers(user_id, consumer_key, consumer_secret,
@@ -155,8 +181,7 @@ def analyze_followers(user_id, consumer_key, consumer_secret,
     for ids in batch(follower_id_sample, 100):
         users.extend(api.UsersLookup(ids))
 
-    result['men'], result['women'], result['andy'] = analyze_users(users)
-    return result
+    return analyze_users(users)
 
 
 def div(num, denom):
@@ -238,8 +263,8 @@ if __name__ == '__main__':
 
     tok, tok_secret = get_access_token(consumer_key, consumer_secret)
 
-    print("{:>10s}\t{:>10s}\t{:>10s}\t{:>10s}".format(
-        '', 'men', 'women', 'nonbinary/unknown'))
+    print("{:>10s}\t{:>10s}\t{:>10s}\t{:>10s}\t{:>10s}".format(
+        '', 'nonbinary', 'men', 'women', 'unknown'))
 
     for user_type, users in [
         ('friends', analyze_friends(user_id, consumer_key, consumer_secret,
@@ -247,11 +272,14 @@ if __name__ == '__main__':
         ('followers', analyze_followers(user_id, consumer_key, consumer_secret,
                                         tok, tok_secret)),
     ]:
-        men, women, andy = users['men'], users['women'], users['andy']
-        print("{:>10s}\t{:10d}\t{:10d}\t{:10d}".format(
-            user_type, men, women, andy))
+        nonbinary, men, women, andy = (
+            users['nonbinary'], users['men'], users['women'], users['andy'])
 
-        print("{:>10s}\t{:10.2f}\t{:10.2f}".format(
+        print("{:>10s}\t{:>10d}\t{:10d}\t{:10d}\t{:10d}".format(
+            user_type, nonbinary, men, women, andy))
+
+        print("{:>10s}\t{:>10.2f}\t{:10.2f}\t{:10.2f}".format(
             '',
-            div(100 * men, men + women),
-            div(100 * women, men + women)))
+            div(100 * nonbinary, nonbinary + men + women),
+            div(100 * men, nonbinary + men + women),
+            div(100 * women, nonbinary + men + women)))

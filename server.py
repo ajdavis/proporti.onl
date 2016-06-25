@@ -78,15 +78,17 @@ def index():
         if app.config['DRY_RUN']:
             time.sleep(2)
             results = {'friends': {'ids_fetched': 0,
-                                   'ids_sampled': 0,
+                                   'ids_sampled': 500,
+                                   'nonbinary': 10,
                                    'men': 200,
-                                   'women': 50,
-                                   'andy': 150},
+                                   'women': 40,
+                                   'andy': 250},
                        'followers': {'ids_fetched': 0,
-                                     'ids_sampled': 0,
+                                     'ids_sampled': 500,
+                                     'nonbinary': 10,
                                      'men': 200,
-                                     'women': 50,
-                                     'andy': 150}}
+                                     'women': 40,
+                                     'andy': 250}}
         else:
             try:
                 results = {'friends': analyze_friends(form.user_id.data,
