@@ -12,6 +12,8 @@ app = Flask('twitter-gender-ratio')
 app.config['SECRET_KEY'] = os.environ['COOKIE_SECRET']
 app.config['DRY_RUN'] = False
 
+CONSUMER_KEY = os.environ.get('CONSUMER_KEY')
+CONSUMER_SECRET = os.environ.get('CONSUMER_SECRET')
 TRACKING_ID = os.environ.get('TRACKING_ID')
 
 oauth = OAuth()
@@ -88,9 +90,13 @@ def index():
         else:
             try:
                 results = {'friends': analyze_friends(form.user_id.data,
+                                                      CONSUMER_KEY,
+                                                      CONSUMER_SECRET,
                                                       oauth_token,
                                                       oauth_token_secret),
                            'followers': analyze_followers(form.user_id.data,
+                                                          CONSUMER_KEY,
+                                                          CONSUMER_SECRET,
                                                           oauth_token,
                                                           oauth_token_secret)}
             except Exception as exc:
