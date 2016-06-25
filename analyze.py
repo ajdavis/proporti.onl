@@ -116,9 +116,12 @@ def get_twitter_api(consumer_key, consumer_secret,
         sleep_on_rate_limit=True)
 
 
-MAX_GET_FRIEND_IDS_CALLS = 5
-MAX_GET_FOLLOWER_IDS_CALLS = 5
-MAX_USERS_LOOKUP_CALLS = 10
+# 500 ids per call.
+MAX_GET_FRIEND_IDS_CALLS = 10
+MAX_GET_FOLLOWER_IDS_CALLS = 10
+
+# 100 users per call.
+MAX_USERS_LOOKUP_CALLS = 30
 
 
 def analyze_friends(user_id, consumer_key, consumer_secret,
