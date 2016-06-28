@@ -254,10 +254,10 @@ def get_access_token(consumer_key, consumer_secret):
 
 if __name__ == '__main__':
     import argparse
-    parser = argparse.ArgumentParser(
-        description='Estimate gender ratio of Twitter friends and followers')
-    parser.add_argument('user_id', nargs=1)
-    args = parser.parse_args()
+    p = argparse.ArgumentParser(description='Estimate gender distribution of '
+                                            'Twitter friends and followers')
+    p.add_argument('user_id', nargs=1)
+    args = p.parse_args()
     [user_id] = args.user_id
 
     consumer_key = (os.environ.get('CONSUMER_KEY') or

@@ -8,7 +8,7 @@ from wtforms import Form, StringField
 
 from analyze import analyze_followers, analyze_friends, div
 
-app = Flask('twitter-gender-ratio')
+app = Flask('twitter-gender-proportion')
 app.config['SECRET_KEY'] = os.environ['COOKIE_SECRET']
 app.config['DRY_RUN'] = False
 

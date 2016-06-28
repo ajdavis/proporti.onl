@@ -1,13 +1,17 @@
-Gender Ratio of Twitter Friends and Followers
-=============================================
+Gender Distribution of Twitter Friends and Followers
+====================================================
 
 [Twitter analytics](https://analytics.twitter.com) estimates the gender ratio of
-your followers, but it doesn't tell you the ratio of those you follow--your
+your followers, but it doesn't tell you about those you follow--your
 Twitter "friends"--and it doesn't let you analyze other people's friends and
-followers.
+followers. Neither does it notice gender-nonbinary users who declare their
+pronouns as "they".
 
 In June 2016 I've deployed it temporarily for public use at
-[emptysquare.pythonanywhere.com](http://emptysquare.pythonanywhere.com).
+[proporti.onl](https://www.proporti.onl).
+
+Read my article about this code: **["72% Of The People I Follow On Twitter Are
+Men."](https://emptysqua.re/blog/gender-of-twitter-users-i-follow/)**
 
 Install
 -------
