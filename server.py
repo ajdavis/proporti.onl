@@ -1,3 +1,4 @@
+import logging
 import os
 import time
 
@@ -7,6 +8,9 @@ from flask_sslify import SSLify
 from wtforms import Form, StringField
 
 from analyze import analyze_followers, analyze_friends, div
+
+logging.getLogger("requests").setLevel(logging.WARNING)
+logging.getLogger("urllib3").setLevel(logging.WARNING)
 
 app = Flask('twitter-gender-proportion')
 app.config['SECRET_KEY'] = os.environ['COOKIE_SECRET']
