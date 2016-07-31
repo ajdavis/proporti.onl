@@ -1,7 +1,7 @@
 import os
 import time
 
-from flask import Flask, flash, redirect,render_template, request, session
+from flask import Flask, flash, redirect, render_template, request, session
 from flask_oauth import OAuth
 from flask_sslify import SSLify
 from wtforms import Form, StringField
