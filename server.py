@@ -4,14 +4,9 @@ import time
 from flask import Flask, flash, redirect, render_template, request, session
 from flask_oauth import OAuth
 from flask_sslify import SSLify
-from requests.packages import urllib3
 from wtforms import Form, StringField
 
 from analyze import analyze_followers, analyze_friends, div
-
-# PythonAnywhere is runs Python 2.7.6 now, disable InsecurePlatformWarning
-# from urllib3 on each SSL request to Twitter API.
-urllib3.disable_warnings()
 
 app = Flask('twitter-gender-proportion')
 app.config['SECRET_KEY'] = os.environ['COOKIE_SECRET']
