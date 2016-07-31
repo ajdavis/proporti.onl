@@ -44,7 +44,12 @@ def login():
     if next_url:
         callback += '?next=' + next_url
 
-    return twitter.authorize(callback=callback)
+    # This has been particularly flakey.
+    try:
+        return twitter.authorize(callback=callback)
+    except Exception as exc:
+        app.logger.exception("Error in twitter.authorize, retrying")
+        return twitter.authorize(callback=callback)
 
 
 @app.route('/logout')
