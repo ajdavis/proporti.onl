@@ -42,8 +42,17 @@ def declared_gender(description):
         return 'nonbinary'
 
     for p, g in [('they', 'nonbinary'),
+                 ('xe', 'nonbinary'),
+                 ('ze', 'nonbinary'),
+                 ('zie', 'nonbinary'),
+                 ('zir', 'nonbinary'),
+                 ('hir', 'nonbinary'),
                  ('she', 'female'),
-                 ('he', 'male')]:
+                 ('hers', 'female'),
+                 ('her', 'female'),
+                 ('he', 'male'),
+                 ('his', 'male'),
+                 ('him', 'male')]:
         for text in (r'\b' + p + r'\b',
                      r'\b' + p + r'/',
                      r'\b' + p + r' /',

@@ -30,6 +30,15 @@ Pass a Twitter username to analyze the user's friends and followers:
 python2.7 analyze.py jessejiryudavis
 ```
 
+Test
+----
+
+From the repository root directory:
+
+```
+python2.7 -m unittest discover -v
+```
+
 Website
 -------
 
