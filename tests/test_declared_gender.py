@@ -12,6 +12,11 @@ class TestDeclaredGender(unittest.TestCase):
             ('she/her/hers', 'female'),
             ('she,her,hers', 'female'),
             ('pronouns: she/her', 'female'),
+            ('i am a nonbinary person', 'nonbinary'),
+            ('hi i\'m non-binary', 'nonbinary'),
+            ('non binary human', 'nonbinary'),
+            ('just a guy living life', 'male'),
+            ('a southern gal', 'female'),
             ('he', 'male'),
             ('he/him', 'male'),
             ('he,him', 'male'),
@@ -31,6 +36,7 @@ class TestDeclaredGender(unittest.TestCase):
             ('pronoun.is/foo', 'nonbinary'),
             ('pronoun.is/zie', 'nonbinary'),
             ('pronoun.is/hir', 'nonbinary'),
+            ('the empire state building', 'andy'),
         ]:
             guess = declared_gender(description)
             assert guess == expected_gender, (
