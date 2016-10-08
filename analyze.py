@@ -44,9 +44,9 @@ def declared_gender(description):
     for p, g in [('they', 'nonbinary'),
                  ('she', 'female'),
                  ('he', 'male')]:
-        for text in (r'\b' + p + '\b',
-                     r'\b' + p + '/',
-                     r'\b' + p + ' /',
+        for text in (r'\b' + p + r'\b',
+                     r'\b' + p + r'/',
+                     r'\b' + p + r' /',
                      r'pronoun\.is/' + p):
             if re.compile(text).search(dl):
                 return g
