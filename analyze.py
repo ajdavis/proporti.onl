@@ -44,6 +44,8 @@ def declared_gender(description):
 
     for p, g in [('they', 'nonbinary'),
                  ('xe', 'nonbinary'),
+                 ('xi', 'nonbinary'),
+                 ('xir', 'nonbinary'),
                  ('ze', 'nonbinary'),
                  ('zie', 'nonbinary'),
                  ('zir', 'nonbinary'),
