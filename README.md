@@ -12,6 +12,8 @@ In June 2016 I've deployed it temporarily for public use at
 Read my article about this code: **["72% Of The People I Follow On Twitter Are
 Men."](https://emptysqua.re/blog/gender-of-twitter-users-i-follow/)**
 
+[Tweet me your thoughts](https://twitter.com/jessejiryudavis).
+
 Install
 -------
 
