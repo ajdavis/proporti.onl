@@ -4,8 +4,7 @@ Gender Distribution of Twitter Friends and Followers
 [Twitter analytics](https://analytics.twitter.com) estimates the gender ratio of
 your followers, but it doesn't tell you about those you follow--your
 Twitter "friends"--and it doesn't let you analyze other people's friends and
-followers. Neither does it notice gender-nonbinary users who declare their
-pronouns as "they".
+followers. Neither does it notice gender-nonbinary users.
 
 In June 2016 I've deployed it temporarily for public use at
 [proporti.onl](https://www.proporti.onl).
