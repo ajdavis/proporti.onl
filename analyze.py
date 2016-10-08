@@ -3,6 +3,7 @@ import pickle
 import random
 import re
 import string
+import warnings
 import webbrowser
 
 import twitter                          # pip install python-twitter
@@ -69,43 +70,46 @@ def analyze_users(users, verbose=False):
               'women': 0,
               'andy': 0}
 
-    for user in users:
-        g = declared_gender(user.description)
-        if g == 'andy':
-            # We haven't found a preferred pronoun.
-            for name, country in [
-                (split(user.name), 'usa'),
-                (user.name, 'usa'),
-                (split(unidecode(user.name)), 'usa'),
-                (unidecode(user.name), 'usa'),
-                (split(user.name), None),
-                (user.name, None),
-                (unidecode(user.name), None),
-                (split(unidecode(user.name)), None),
-            ]:
-                g = detector.get_gender(name, country)
-                if g != 'andy':
-                    # Not androgynous.
-                    break
+    with warnings.catch_warnings():
+        # Suppress unidecode warning "Surrogate character will be ignored".
+        warnings.filterwarnings("ignore")
+        for user in users:
+            g = declared_gender(user.description)
+            if g == 'andy':
+                # We haven't found a preferred pronoun.
+                for name, country in [
+                    (split(user.name), 'usa'),
+                    (user.name, 'usa'),
+                    (split(unidecode(user.name)), 'usa'),
+                    (unidecode(user.name), 'usa'),
+                    (split(user.name), None),
+                    (user.name, None),
+                    (unidecode(user.name), None),
+                    (split(unidecode(user.name)), None),
+                ]:
+                    g = detector.get_gender(name, country)
+                    if g != 'andy':
+                        # Not androgynous.
+                        break
 
-                g = detector.get_gender(rm_punctuation(name), country)
-                if g != 'andy':
-                    # Not androgynous.
-                    break
+                    g = detector.get_gender(rm_punctuation(name), country)
+                    if g != 'andy':
+                        # Not androgynous.
+                        break
 
-        if verbose:
-            print("{:20s}\t{:40s}\t{:s}".format(
-                user.screen_name.encode('utf-8'),
-                user.name.encode('utf-8'), g))
+            if verbose:
+                print("{:20s}\t{:40s}\t{:s}".format(
+                    user.screen_name.encode('utf-8'),
+                    user.name.encode('utf-8'), g))
 
-        if g == 'nonbinary':
-            result['nonbinary'] += 1
-        elif g == 'male':
-            result['men'] += 1
-        elif g == 'female':
-            result['women'] += 1
-        else:
-            result['andy'] += 1
+            if g == 'nonbinary':
+                result['nonbinary'] += 1
+            elif g == 'male':
+                result['men'] += 1
+            elif g == 'female':
+                result['women'] += 1
+            else:
+                result['andy'] += 1
 
     return result
 
