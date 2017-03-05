@@ -4,9 +4,13 @@
         href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css"
         integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7"
         crossorigin="anonymous">
-<title>Proporti.onl: Gender distribution of Twitter Friends and Followers</title>
+<title>Proporti.onl: Gender distribution of People You Follow and Followers on Twitter</title>
 <link rel="shortcut icon" href="//static/favicon.png" type="image/png" />
 <style type="text/css">
+td.td-important {
+  font-weight: bold;
+  font-size: large;
+}
 .alert-container {
   max-height: 100px;
   overflow: hidden;
@@ -124,7 +128,8 @@
         </div>
       </div>
       <button id="analyze-button" type="submit" class="btn btn-primary">
-        <span id="analyze-loading" style="display: none;"><span class="glyphicon glyphicon-refresh spinning"></span> Loading...</span>
+        <span id="analyze-loading" style="display: none;">
+          <span class="glyphicon glyphicon-refresh spinning"></span> Loading (this can take up to a minute) </span>
         <span id="analyze-button-text" >Analyze</span>
       </button>
     </form>
@@ -139,24 +144,24 @@
 
   {% if results %}
     <h2>Results for @{{ form.user_id.data }}</h2>
-    <p>Sampled {{ results.friends.ids_sampled }} friends and {{ results.followers.ids_sampled }} followers.</p>
-    <table class="table table-striped" style="table-layout: fixed;">
+    <p>Sampled {{ results.friends.ids_sampled }} people you follow and {{ results.followers.ids_sampled }} followers.</p>
+    <table class="table" style="table-layout: fixed;">
       <thead><tr>
         <th class="col-md-1">&nbsp;</th>
         <th class="col-md-1">nonbinary</th>
         <th class="col-md-1">men</th>
         <th class="col-md-1">women</th>
-        <th class="col-md-1">no gender,<br>unknown</th>
+        <th class="col-md-1" style="font-weight: normal">no gender,<br>unknown</th>
       </tr></thead>
-      {% for user_type, users in [('Friends you follow', results.friends), ('Followers', results.followers)] %}
-      <tr><td>{{ user_type }}</td><td>{{ users.nonbinary }}</td><td>{{ users.men }}</td><td>{{ users.women }}</td><td>{{ users.andy }}</td></tr>
+      {% for user_type, users in [('People you follow', results.friends), ('Followers', results.followers)] %}
       <tr>
-        <td>&nbsp;</td>
-        <td>{{ div(100 * users.nonbinary, users.nonbinary + users.men + users.women)|round|int }}%</td>
-        <td>{{ div(100 * users.men, users.nonbinary + users.men + users.women)|round|int }}%</td>
-        <td>{{ div(100 * users.women, users.nonbinary + users.men + users.women)|round|int }}%</td>
+        <td>{{ user_type }}</td>
+        <td class="td-important">{{ div(100 * users.nonbinary, users.nonbinary + users.men + users.women)|round|int }}%</td>
+        <td class="td-important">{{ div(100 * users.men, users.nonbinary + users.men + users.women)|round|int }}%</td>
+        <td class="td-important">{{ div(100 * users.women, users.nonbinary + users.men + users.women)|round|int }}%</td>
         <td>&nbsp;</td>
       </tr>
+      <tr><td>&nbsp;</td><td>{{ users.nonbinary }}</td><td>{{ users.men }}</td><td>{{ users.women }}</td><td>{{ users.andy }}</td></tr>
       {% endfor %}
     </table>
   {% endif %}
