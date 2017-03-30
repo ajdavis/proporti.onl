@@ -36,6 +36,11 @@ class TestDeclaredGender(unittest.TestCase):
             ('pronoun.is/foo', 'nonbinary'),
             ('pronoun.is/zie', 'nonbinary'),
             ('pronoun.is/hir', 'nonbinary'),
+            ('mum to one boy and one girl', 'female'),
+            ('proud mom', 'female'),
+            ('doting dad', 'male'),
+            ('grandfather', 'male'),
+            ('supermom', 'female'),
             ('the empire state building', 'andy'),
         ]:
             guess = declared_gender(description)
