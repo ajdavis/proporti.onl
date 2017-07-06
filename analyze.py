@@ -3,6 +3,7 @@ import pickle
 import random
 import re
 import string
+import sys
 import warnings
 import webbrowser
 
@@ -79,52 +80,57 @@ def declared_gender(description):
     return 'andy'  # Don't know.
 
 
+def analyze_user(user, verbose=False):
+    with warnings.catch_warnings():
+        # Suppress unidecode warning "Surrogate character will be ignored".
+        warnings.filterwarnings("ignore")
+        g = declared_gender(user.description)
+        if g == 'andy':
+            # We haven't found a preferred pronoun.
+            for name, country in [
+                (split(user.name), 'usa'),
+                (user.name, 'usa'),
+                (split(unidecode(user.name)), 'usa'),
+                (unidecode(user.name), 'usa'),
+                (split(user.name), None),
+                (user.name, None),
+                (unidecode(user.name), None),
+                (split(unidecode(user.name)), None),
+            ]:
+                g = detector.get_gender(name, country)
+                if g != 'andy':
+                    # Not androgynous.
+                    break
+
+                g = detector.get_gender(rm_punctuation(name), country)
+                if g != 'andy':
+                    # Not androgynous.
+                    break
+
+        if verbose:
+            print("{:20s}\t{:40s}\t{:s}".format(
+                user.screen_name.encode('utf-8'),
+                user.name.encode('utf-8'), g))
+
+        return g
+
 def analyze_users(users, verbose=False):
     result = {'nonbinary': 0,
               'men': 0,
               'women': 0,
               'andy': 0}
 
-    with warnings.catch_warnings():
-        # Suppress unidecode warning "Surrogate character will be ignored".
-        warnings.filterwarnings("ignore")
-        for user in users:
-            g = declared_gender(user.description)
-            if g == 'andy':
-                # We haven't found a preferred pronoun.
-                for name, country in [
-                    (split(user.name), 'usa'),
-                    (user.name, 'usa'),
-                    (split(unidecode(user.name)), 'usa'),
-                    (unidecode(user.name), 'usa'),
-                    (split(user.name), None),
-                    (user.name, None),
-                    (unidecode(user.name), None),
-                    (split(unidecode(user.name)), None),
-                ]:
-                    g = detector.get_gender(name, country)
-                    if g != 'andy':
-                        # Not androgynous.
-                        break
+    for user in users:
+        g = analyze_user(user)
 
-                    g = detector.get_gender(rm_punctuation(name), country)
-                    if g != 'andy':
-                        # Not androgynous.
-                        break
-
-            if verbose:
-                print("{:20s}\t{:40s}\t{:s}".format(
-                    user.screen_name.encode('utf-8'),
-                    user.name.encode('utf-8'), g))
-
-            if g == 'nonbinary':
-                result['nonbinary'] += 1
-            elif g == 'male':
-                result['men'] += 1
-            elif g == 'female':
-                result['women'] += 1
-            else:
-                result['andy'] += 1
+        if g == 'nonbinary':
+            result['nonbinary'] += 1
+        elif g == 'male':
+            result['men'] += 1
+        elif g == 'female':
+            result['women'] += 1
+        else:
+            result['andy'] += 1
 
     return result
 
@@ -150,6 +156,16 @@ MAX_GET_FOLLOWER_IDS_CALLS = 10
 
 # 100 users per call.
 MAX_USERS_LOOKUP_CALLS = 30
+
+
+def analyze_self(user_id, consumer_key, consumer_secret,
+                    oauth_token, oauth_token_secret):
+    api = get_twitter_api(consumer_key, consumer_secret,
+                          oauth_token, oauth_token_secret)
+
+    users = api.UsersLookup(screen_name=[user_id])
+
+    return analyze_user(users[0])
 
 
 def analyze_friends(user_id, consumer_key, consumer_secret,
@@ -285,6 +301,8 @@ if __name__ == '__main__':
     p = argparse.ArgumentParser(description='Estimate gender distribution of '
                                             'Twitter friends and followers')
     p.add_argument('user_id', nargs=1)
+    p.add_argument('--self', help="perform gender analysis on user_id itself",
+                   action="store_true")
     args = p.parse_args()
     [user_id] = args.user_id
 
@@ -295,6 +313,11 @@ if __name__ == '__main__':
                        raw_input('Enter your consumer secret: '))
 
     tok, tok_secret = get_access_token(consumer_key, consumer_secret)
+
+    if args.self:
+        print(analyze_self(user_id, consumer_key, consumer_secret,
+                                        tok, tok_secret))
+        sys.exit()
 
     print("{:>10s}\t{:>10s}\t{:>10s}\t{:>10s}\t{:>10s}".format(
         '', 'nonbinary', 'men', 'women', 'unknown'))
