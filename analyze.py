@@ -119,9 +119,9 @@ def analyze_users(users, verbose=False):
 
             if g == 'nonbinary':
                 result['nonbinary'] += 1
-            elif g == 'male':
+            elif g in ('male', 'mostly_male'):
                 result['men'] += 1
-            elif g == 'female':
+            elif g in ('female', 'mostly_female'):
                 result['women'] += 1
             else:
                 result['andy'] += 1
