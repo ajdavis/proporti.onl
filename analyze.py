@@ -7,11 +7,10 @@ import sys
 import warnings
 import webbrowser
 
-import twitter                          # pip install python-twitter
-import sexmachine.detector as gender    # pip install SexMachine
+import twitter  # pip install python-twitter
+import sexmachine.detector as gender  # pip install SexMachine
 from requests_oauthlib import OAuth1Session
-from unidecode import unidecode         # pip install unidecode
-
+from unidecode import unidecode  # pip install unidecode
 
 if os.path.exists('detector.pickle'):
     detector = pickle.load(open('detector.pickle', 'rb'))
@@ -39,8 +38,8 @@ def rm_punctuation(s):
 def declared_gender(description):
     dl = description.lower()
     if ('pronoun.is' in dl and
-            'pronoun.is/she' not in dl and
-            'pronoun.is/he' not in dl):
+                'pronoun.is/she' not in dl and
+                'pronoun.is/he' not in dl):
         return 'nonbinary'
 
     for p, g in [('they', 'nonbinary'),
@@ -121,6 +120,7 @@ def analyze_user(user, verbose=False):
 
         return g
 
+
 def analyze_users(users, verbose=False):
     result = {'nonbinary': 0,
               'men': 0,
@@ -166,7 +166,7 @@ MAX_USERS_LOOKUP_CALLS = 30
 
 
 def analyze_self(user_id, consumer_key, consumer_secret,
-                    oauth_token, oauth_token_secret):
+                 oauth_token, oauth_token_secret):
     api = get_twitter_api(consumer_key, consumer_secret,
                           oauth_token, oauth_token_secret)
 
@@ -305,6 +305,7 @@ def get_access_token(consumer_key, consumer_secret):
 
 if __name__ == '__main__':
     import argparse
+
     p = argparse.ArgumentParser(description='Estimate gender distribution of '
                                             'Twitter friends and followers')
     p.add_argument('user_id', nargs=1)
@@ -323,7 +324,7 @@ if __name__ == '__main__':
 
     if args.self:
         print(analyze_self(user_id, consumer_key, consumer_secret,
-                                        tok, tok_secret))
+                           tok, tok_secret))
         sys.exit()
 
     print("{:>10s}\t{:>10s}\t{:>10s}\t{:>10s}\t{:>10s}".format(
