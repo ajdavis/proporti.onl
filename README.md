@@ -20,7 +20,7 @@ Install
 This script requires Python 2.7, and the packages listed in `requirements.txt`.
 
 ```
-python2.7 -m pip install -r requirements
+python2.7 -m pip install -r requirements.txt
 ```
 
 Command-line Use
