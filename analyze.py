@@ -45,6 +45,7 @@ def declared_gender(description):
     for p, g in [('non binary', 'nonbinary'),
                  ('non-binary', 'nonbinary'),
                  ('nonbinary', 'nonbinary'),
+                 ('enby', 'nonbinary'),
                  ('genderqueer', 'nonbinary'),
                  ('man', 'male'),
                  ('male', 'male'),
