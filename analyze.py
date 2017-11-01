@@ -129,7 +129,7 @@ def analyze_users(users, verbose=False):
               'andy': 0}
 
     for user in users:
-        g = analyze_user(user)
+        g = analyze_user(user, verbose)
 
         if g == 'nonbinary':
             result['nonbinary'] += 1
@@ -177,7 +177,10 @@ def analyze_self(user_id, consumer_key, consumer_secret,
 
 
 def analyze_friends(user_id, consumer_key, consumer_secret,
-                    oauth_token, oauth_token_secret):
+                    oauth_token, oauth_token_secret, verbose):
+    if verbose:
+      print "\nAnalyzing friends."
+
     result = {'ids_fetched': 0, 'ids_sampled': 0}
     api = get_twitter_api(consumer_key, consumer_secret,
                           oauth_token, oauth_token_secret)
@@ -205,12 +208,15 @@ def analyze_friends(user_id, consumer_key, consumer_secret,
     for ids in batch(friend_id_sample, 100):
         users.extend(api.UsersLookup(ids))
 
-    result.update(analyze_users(users))
+    result.update(analyze_users(users, verbose))
     return result
 
 
 def analyze_followers(user_id, consumer_key, consumer_secret,
-                      oauth_token, oauth_token_secret):
+                      oauth_token, oauth_token_secret, verbose):
+    if verbose:
+      print "\nAnalyzing followers."
+
     result = {'ids_fetched': 0, 'ids_sampled': 0}
     api = get_twitter_api(consumer_key, consumer_secret,
                           oauth_token, oauth_token_secret)
@@ -237,7 +243,7 @@ def analyze_followers(user_id, consumer_key, consumer_secret,
     for ids in batch(follower_id_sample, 100):
         users.extend(api.UsersLookup(ids))
 
-    result.update(analyze_users(users))
+    result.update(analyze_users(users, verbose))
     return result
 
 
@@ -310,6 +316,8 @@ if __name__ == '__main__':
     p = argparse.ArgumentParser(description='Estimate gender distribution of '
                                             'Twitter friends and followers')
     p.add_argument('user_id', nargs=1)
+    p.add_argument('--verbose', help="print user analysis",
+                   action="store_true")
     p.add_argument('--self', help="perform gender analysis on user_id itself",
                    action="store_true")
     args = p.parse_args()
@@ -328,15 +336,17 @@ if __name__ == '__main__':
                            tok, tok_secret))
         sys.exit()
 
+    data = [
+        ('friends', analyze_friends(user_id, consumer_key, consumer_secret,
+                                    tok, tok_secret, args.verbose)),
+        ('followers', analyze_followers(user_id, consumer_key, consumer_secret,
+                                        tok, tok_secret, args.verbose)),
+    ]
+
     print("{:>10s}\t{:>10s}\t{:>10s}\t{:>10s}\t{:>10s}".format(
         '', 'nonbinary', 'men', 'women', 'unknown'))
 
-    for user_type, users in [
-        ('friends', analyze_friends(user_id, consumer_key, consumer_secret,
-                                    tok, tok_secret)),
-        ('followers', analyze_followers(user_id, consumer_key, consumer_secret,
-                                        tok, tok_secret)),
-    ]:
+    for user_type, users in data:
         nonbinary, men, women, andy = (
             users['nonbinary'], users['men'], users['women'], users['andy'])
 
