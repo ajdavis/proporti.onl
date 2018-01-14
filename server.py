@@ -5,9 +5,9 @@ import time
 from flask import Flask, flash, redirect, render_template, request, session
 from flask_oauth import OAuth
 from flask_sslify import SSLify
-from wtforms import Form, StringField
+from wtforms import Form, StringField, SelectField
 
-from analyze import analyze_followers, analyze_friends, div
+from analyze import analyze_followers, analyze_friends, div, get_friends_lists
 
 logging.getLogger("requests").setLevel(logging.WARNING)
 logging.getLogger("urllib3").setLevel(logging.WARNING)
@@ -46,7 +46,7 @@ def login():
     # This has been particularly flakey.
     try:
         return twitter.authorize(callback=callback)
-    except Exception as exc:
+    except Exception:
         app.logger.exception("Error in twitter.authorize, retrying")
         return twitter.authorize(callback=callback)
 
@@ -69,23 +69,43 @@ def oauth_authorized(resp):
 
     session['twitter_token'] = (resp['oauth_token'], resp['oauth_token_secret'])
     session['twitter_user'] = resp['screen_name']
+    try:
+        lists = get_friends_lists(resp['screen_name'],
+                                  CONSUMER_KEY,
+                                  CONSUMER_SECRET,
+                                  resp['oauth_token'],
+                                  resp['oauth_token_secret'])
+
+        session['lists'] = [l.AsDict() for l in lists]
+    except Exception:
+        app.logger.exception("Error in get_friends_lists, ignoring")
+        session['lists'] = []
+
     flash(u'You were signed in as %s' % resp['screen_name'])
     return redirect(next_url)
 
 
 class AnalyzeForm(Form):
     user_id = StringField('Twitter User Name')
+    lst = SelectField('List')
 
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
     oauth_token, oauth_token_secret = session.get('twitter_token', (None, None))
     form = AnalyzeForm(request.form)
+    if session.get('lists'):
+        form.lst.choices = [('none', 'No list')] + [
+            (unicode(l['id']), l['name']) for l in session['lists']]
+    else:
+        del form.lst
+
     results = {}
-    error = None
+    list_name = list_id = error = None
     if request.method == 'POST' and form.validate() and form.user_id.data:
         if app.config['DRY_RUN']:
             time.sleep(2)
+            list_name = list_id = None
             results = {'friends': {'ids_fetched': 0,
                                    'ids_sampled': 500,
                                    'nonbinary': 10,
@@ -99,8 +119,14 @@ def index():
                                      'women': 40,
                                      'andy': 250}}
         else:
+            if session.get('lists') and form.lst.data != 'none':
+                list_id = int(form.lst.data)
+                list_name = [l['name'] for l in session['lists'] if
+                             int(l['id']) == list_id][0]
+
             try:
                 results = {'friends': analyze_friends(form.user_id.data,
+                                                      list_id,
                                                       CONSUMER_KEY,
                                                       CONSUMER_SECRET,
                                                       oauth_token,
@@ -117,20 +143,24 @@ def index():
 
     return render_template('index.html',
                            form=form, results=results, error=error, div=div,
-                           TRACKING_ID=TRACKING_ID)
+                           list_name=list_name, TRACKING_ID=TRACKING_ID)
 
-
-# Force SSL.
-sslify = SSLify(app)
 
 if __name__ == '__main__':
     import argparse
+
     parser = argparse.ArgumentParser()
     parser.add_argument('--debug', action='store_true')
     parser.add_argument('--dry-run', action='store_true')
+    parser.add_argument('--no-ssl', action='store_true', default=False,
+                        dest='nossl')
     parser.add_argument('port', nargs=1, type=int)
     args = parser.parse_args()
     [port] = args.port
+
+    if not args.nossl:
+        # Force SSL.
+        sslify = SSLify(app)
 
     app.config['DRY_RUN'] = args.dry_run
     app.run(port=port, debug=args.debug)

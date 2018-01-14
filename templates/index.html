@@ -126,6 +126,12 @@ td.td-important {
           <input type="text" class="form-control" name="user_id" id="user_id"
             value="{{ form.user_id.data|default(session.twitter_user, true) }}">
         </div>
+        {% if session.get('lists') %}
+          <label for="lst">List:</label>
+          <div class="input-group col-xs-4">
+            {{ form.lst(class_="form-control") }}
+          </div>
+        {% endif %}
       </div>
       <button id="analyze-button" type="submit" class="btn btn-primary">
         <span id="analyze-loading" style="display: none;">
@@ -144,7 +150,7 @@ td.td-important {
 
   {% if results %}
     <h2>Results for @{{ form.user_id.data }}</h2>
-    <p>Sampled {{ results.friends.ids_sampled }} people you follow and {{ results.followers.ids_sampled }} followers.</p>
+    <p>Sampled {{ results.friends.ids_sampled }} people you follow {% if list_name %} in list "{{ list_name }}" {% endif %} and {{ results.followers.ids_sampled }} followers.</p>
     <table class="table" style="table-layout: fixed;">
       <thead><tr>
         <th class="col-md-1">&nbsp;</th>

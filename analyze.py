@@ -38,8 +38,8 @@ def rm_punctuation(s):
 def declared_gender(description):
     dl = description.lower()
     if ('pronoun.is' in dl and
-                'pronoun.is/she' not in dl and
-                'pronoun.is/he' not in dl):
+        'pronoun.is/she' not in dl and
+        'pronoun.is/he' not in dl):
         return 'nonbinary'
 
     for p, g in [('non binary', 'nonbinary'),
@@ -166,6 +166,13 @@ MAX_GET_FOLLOWER_IDS_CALLS = 10
 MAX_USERS_LOOKUP_CALLS = 30
 
 
+def get_friends_lists(user_id, consumer_key, consumer_secret,
+                      oauth_token, oauth_token_secret):
+    api = get_twitter_api(consumer_key, consumer_secret,
+                          oauth_token, oauth_token_secret)
+    return reversed(api.GetLists())
+
+
 def analyze_self(user_id, consumer_key, consumer_secret,
                  oauth_token, oauth_token_secret):
     api = get_twitter_api(consumer_key, consumer_secret,
@@ -176,7 +183,7 @@ def analyze_self(user_id, consumer_key, consumer_secret,
     return analyze_user(users[0])
 
 
-def analyze_friends(user_id, consumer_key, consumer_secret,
+def analyze_friends(user_id, list_id, consumer_key, consumer_secret,
                     oauth_token, oauth_token_secret):
     result = {'ids_fetched': 0, 'ids_sampled': 0}
     api = get_twitter_api(consumer_key, consumer_secret,
@@ -185,9 +192,15 @@ def analyze_friends(user_id, consumer_key, consumer_secret,
     nxt = -1
     friend_ids = []
     for _ in range(MAX_GET_FRIEND_IDS_CALLS):
-        nxt, prev, data = api.GetFriendIDsPaged(screen_name=user_id,
-                                                cursor=nxt)
-        friend_ids.extend(data)
+        if list_id is not None:
+            nxt, prev, data = api.GetListMembersPaged(list_id=list_id,
+                                                      cursor=nxt)
+            friend_ids.extend([fr.id for fr in data])
+        else:
+            nxt, prev, data = api.GetFriendIDsPaged(screen_name=user_id,
+                                                    cursor=nxt)
+
+            friend_ids.extend(data)
         if nxt == 0 or nxt == prev:
             break
 
