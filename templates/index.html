@@ -83,6 +83,16 @@ td.td-important {
   }
 
   document.addEventListener('DOMContentLoaded', function() {
+    var userid = document.getElementById("user_id");
+    var lst = document.getElementById("lst");
+    userid.onkeyup = function() {
+      /* if the auth'ed user has Twitter lists but a different user name is in
+       * the text box, hide the lists */
+      if (lst !== null) {
+        lst.disabled = (userid.value !== "{{ session.twitter_user }}");
+      }
+    };
+
     setTimeout(close_alerts, 8000);
   }, false);
 </script>
@@ -126,7 +136,7 @@ td.td-important {
           <input type="text" class="form-control" name="user_id" id="user_id"
             value="{{ form.user_id.data|default(session.twitter_user, true) }}">
         </div>
-        {% if session.get('lists') %}
+        {% if form.lst %}
           <label for="lst">List:</label>
           <div class="input-group col-xs-4">
             {{ form.lst(class_="form-control") }}

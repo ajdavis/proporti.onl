@@ -103,6 +103,11 @@ def index():
     results = {}
     list_name = list_id = error = None
     if request.method == 'POST' and form.validate() and form.user_id.data:
+        # Don't show auth'ed user's lists in results for another user.
+        if (hasattr(form, 'lst')
+                and form.user_id.data != session.get('twitter_user')):
+            del form.lst
+
         if app.config['DRY_RUN']:
             time.sleep(2)
             list_name = list_id = None
@@ -119,7 +124,7 @@ def index():
                                      'women': 40,
                                      'andy': 250}}
         else:
-            if session.get('lists') and form.lst.data != 'none':
+            if session.get('lists') and form.lst and form.lst.data != 'none':
                 list_id = int(form.lst.data)
                 list_name = [l['name'] for l in session['lists'] if
                              int(l['id']) == list_id][0]
