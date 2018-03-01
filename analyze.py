@@ -4,11 +4,9 @@ import random
 import re
 import string
 import sys
-import time
 import warnings
 import webbrowser
 
-from concurrent.futures import ThreadPoolExecutor
 import twitter  # pip install python-twitter
 import sexmachine.detector as gender  # pip install SexMachine
 from requests_oauthlib import OAuth1Session
@@ -35,10 +33,6 @@ nonletter = allchars.translate(allchars, string.letters).replace(' ', '')
 
 def rm_punctuation(s):
     return string.translate(s.encode("utf-8"), None, nonletter).strip()
-
-
-# We want enough workers to do several visitors' Twitter API fetches at once.
-thread_pool = ThreadPoolExecutor(max_workers=100)
 
 
 def declared_gender(description):
@@ -154,10 +148,6 @@ def batch(it, size):
         yield it[i:i + size]
 
 
-def unbatch(seq):
-    return [x for subseq in seq for x in subseq]
-
-
 def get_twitter_api(consumer_key, consumer_secret,
                     oauth_token, oauth_token_secret):
     return twitter.Api(
@@ -224,8 +214,9 @@ def analyze_friends(user_id, list_id, consumer_key, consumer_secret,
         friend_id_sample = friend_ids
 
     result['ids_sampled'] = len(friend_id_sample)
-    users = unbatch(thread_pool.map(api.UsersLookup,
-                                    batch(friend_id_sample, 100)))
+    users = []
+    for ids in batch(friend_id_sample, 100):
+        users.extend(api.UsersLookup(ids))
 
     result.update(analyze_users(users))
     return result
@@ -255,8 +246,9 @@ def analyze_followers(user_id, consumer_key, consumer_secret,
         follower_id_sample = follower_ids
 
     result['ids_sampled'] = len(follower_id_sample)
-    users = unbatch(thread_pool.map(api.UsersLookup,
-                                    batch(follower_id_sample, 100)))
+    users = []
+    for ids in batch(follower_id_sample, 100):
+        users.extend(api.UsersLookup(ids))
 
     result.update(analyze_users(users))
     return result
@@ -349,13 +341,12 @@ if __name__ == '__main__':
                            tok, tok_secret))
         sys.exit()
 
-    start = time.time()
     print("{:>10s}\t{:>10s}\t{:>10s}\t{:>10s}\t{:>10s}".format(
         '', 'nonbinary', 'men', 'women', 'unknown'))
 
     for user_type, users in [
-        ('friends', analyze_friends(user_id, None, consumer_key,
-                                    consumer_secret, tok, tok_secret)),
+        ('friends', analyze_friends(user_id, consumer_key, consumer_secret,
+                                    tok, tok_secret)),
         ('followers', analyze_followers(user_id, consumer_key, consumer_secret,
                                         tok, tok_secret)),
     ]:
@@ -370,5 +361,3 @@ if __name__ == '__main__':
             div(100 * nonbinary, nonbinary + men + women),
             div(100 * men, nonbinary + men + women),
             div(100 * women, nonbinary + men + women)))
-
-    print("{:.1f} seconds".format(time.time() - start))
