@@ -60,29 +60,42 @@ def logout():
 
 
 @app.route('/authorized')
-@twitter.authorized_handler
-def oauth_authorized(resp):
-    next_url = request.args.get('next') or '/'
-    if resp is None:
-        flash(u'You denied the request to sign in.')
+def oauth_authorized():
+    @twitter.authorized_handler
+    def f(resp):
+        next_url = request.args.get('next') or '/'
+        if resp is None:
+            flash(u'You denied the request to sign in.')
+            return redirect(next_url)
+
+        session['twitter_user'] = resp['screen_name']
+        session['twitter_token'] = (resp['oauth_token'],
+                                    resp['oauth_token_secret'])
+        try:
+            lists = get_friends_lists(resp['screen_name'],
+                                      CONSUMER_KEY,
+                                      CONSUMER_SECRET,
+                                      resp['oauth_token'],
+                                      resp['oauth_token_secret'])
+
+            session['lists'] = [l.AsDict() for l in lists]
+        except Exception:
+            app.logger.exception("Error in get_friends_lists, ignoring")
+            session['lists'] = []
+
+        flash(u'You were signed in as %s' % resp['screen_name'])
         return redirect(next_url)
 
-    session['twitter_token'] = (resp['oauth_token'], resp['oauth_token_secret'])
-    session['twitter_user'] = resp['screen_name']
     try:
-        lists = get_friends_lists(resp['screen_name'],
-                                  CONSUMER_KEY,
-                                  CONSUMER_SECRET,
-                                  resp['oauth_token'],
-                                  resp['oauth_token_secret'])
+        return f()
+    except Exception as exc:
+        app.logger.exception("Error in oauth_authorized")
+        try:
+            flash(unicode(exc))
+        except Exception:
+            flash("Error in Twitter authorization")
 
-        session['lists'] = [l.AsDict() for l in lists]
-    except Exception:
-        app.logger.exception("Error in get_friends_lists, ignoring")
-        session['lists'] = []
-
-    flash(u'You were signed in as %s' % resp['screen_name'])
-    return redirect(next_url)
+        return redirect('/')
 
 
 class AnalyzeForm(Form):
