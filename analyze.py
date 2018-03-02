@@ -170,7 +170,14 @@ def get_friends_lists(user_id, consumer_key, consumer_secret,
                       oauth_token, oauth_token_secret):
     api = get_twitter_api(consumer_key, consumer_secret,
                           oauth_token, oauth_token_secret)
-    return reversed(api.GetLists())
+
+    # Only store what we need, avoid oversized session cookie.
+    def process_lists():
+        for l in reversed(api.GetLists()):
+            as_dict = l.AsDict()
+            yield {'id': as_dict.get('id'), 'name': as_dict.get('name')}
+
+    return list(process_lists())
 
 
 def analyze_self(user_id, consumer_key, consumer_secret,

@@ -70,13 +70,11 @@ def oauth_authorized(resp):
     session['twitter_token'] = (resp['oauth_token'], resp['oauth_token_secret'])
     session['twitter_user'] = resp['screen_name']
     try:
-        lists = get_friends_lists(resp['screen_name'],
-                                  CONSUMER_KEY,
-                                  CONSUMER_SECRET,
-                                  resp['oauth_token'],
-                                  resp['oauth_token_secret'])
-
-        session['lists'] = [l.AsDict() for l in lists]
+        session['lists'] = get_friends_lists(resp['screen_name'],
+                                             CONSUMER_KEY,
+                                             CONSUMER_SECRET,
+                                             resp['oauth_token'],
+                                             resp['oauth_token_secret'])
     except Exception:
         app.logger.exception("Error in get_friends_lists, ignoring")
         session['lists'] = []
