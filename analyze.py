@@ -352,7 +352,7 @@ if __name__ == '__main__':
         '', 'nonbinary', 'men', 'women', 'unknown'))
 
     for user_type, users in [
-        ('friends', analyze_friends(user_id, consumer_key, consumer_secret,
+        ('friends', analyze_friends(user_id, None, consumer_key, consumer_secret,
                                     tok, tok_secret)),
         ('followers', analyze_followers(user_id, consumer_key, consumer_secret,
                                         tok, tok_secret)),
