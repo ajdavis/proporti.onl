@@ -1,13 +1,16 @@
 import logging
 import os
-import time
 
 from flask import Flask, flash, redirect, render_template, request, session
 from flask_oauth import OAuth
 from flask_sslify import SSLify
 from wtforms import Form, StringField, SelectField
 
-from analyze import analyze_followers, analyze_friends, div, get_friends_lists
+from analyze import (analyze_followers,
+                     analyze_friends,
+                     div,
+                     dry_run_analysis,
+                     get_friends_lists)
 
 logging.getLogger("requests").setLevel(logging.WARNING)
 logging.getLogger("urllib3").setLevel(logging.WARNING)
@@ -103,24 +106,14 @@ def index():
     if request.method == 'POST' and form.validate() and form.user_id.data:
         # Don't show auth'ed user's lists in results for another user.
         if (hasattr(form, 'lst')
-                and form.user_id.data != session.get('twitter_user')):
+            and form.user_id.data != session.get('twitter_user')):
             del form.lst
 
         if app.config['DRY_RUN']:
-            time.sleep(2)
             list_name = list_id = None
-            results = {'friends': {'ids_fetched': 0,
-                                   'ids_sampled': 500,
-                                   'nonbinary': 10,
-                                   'men': 200,
-                                   'women': 40,
-                                   'andy': 250},
-                       'followers': {'ids_fetched': 0,
-                                     'ids_sampled': 500,
-                                     'nonbinary': 10,
-                                     'men': 200,
-                                     'women': 40,
-                                     'andy': 250}}
+            friends, followers = dry_run_analysis()
+            results = {'friends': friends,
+                       'followers': followers}
         else:
             if session.get('lists') and form.lst and form.lst.data != 'none':
                 list_id = int(form.lst.data)

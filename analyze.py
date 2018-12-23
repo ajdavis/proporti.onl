@@ -88,59 +88,131 @@ def declared_gender(description):
 
 
 def analyze_user(user, verbose=False):
+    """Get (gender, declared) tuple.
+
+    gender is "male", "female", "nonbinary", or "andy" meaning unknown.
+    declared is True or False.
+    """
     with warnings.catch_warnings():
         # Suppress unidecode warning "Surrogate character will be ignored".
         warnings.filterwarnings("ignore")
         g = declared_gender(user.description)
-        if g == 'andy':
-            # We haven't found a preferred pronoun.
-            for name, country in [
-                (split(user.name), 'usa'),
-                (user.name, 'usa'),
-                (split(unidecode(user.name)), 'usa'),
-                (unidecode(user.name), 'usa'),
-                (split(user.name), None),
-                (user.name, None),
-                (unidecode(user.name), None),
-                (split(unidecode(user.name)), None),
-            ]:
-                g = detector.get_gender(name, country)
-                if g != 'andy':
-                    # Not androgynous.
-                    break
+        if g != 'andy':
+            return g, True
 
-                g = detector.get_gender(rm_punctuation(name), country)
-                if g != 'andy':
-                    # Not androgynous.
-                    break
+        # We haven't found a preferred pronoun.
+        for name, country in [
+            (split(user.name), 'usa'),
+            (user.name, 'usa'),
+            (split(unidecode(user.name)), 'usa'),
+            (unidecode(user.name), 'usa'),
+            (split(user.name), None),
+            (user.name, None),
+            (unidecode(user.name), None),
+            (split(unidecode(user.name)), None),
+        ]:
+            g = detector.get_gender(name, country)
+            if g != 'andy':
+                # Not androgynous.
+                break
+
+            g = detector.get_gender(rm_punctuation(name), country)
+            if g != 'andy':
+                # Not androgynous.
+                break
 
         if verbose:
             print("{:20s}\t{:40s}\t{:s}".format(
                 user.screen_name.encode('utf-8'),
                 user.name.encode('utf-8'), g))
 
-        return g
+        if g.startswith('mostly_'):
+            g = g.split('mostly_')[1]
+
+        return g, False
 
 
-def analyze_users(users, verbose=False):
-    result = {'nonbinary': 0,
-              'men': 0,
-              'women': 0,
-              'andy': 0}
+def div(num, denom):
+    if denom:
+        return num / float(denom)
+
+    return 0
+
+
+class Stat(object):
+    def __init__(self):
+        self.n = 0
+        self.n_declared = 0
+
+
+class Analysis(object):
+    def __init__(self, ids_sampled, ids_fetched):
+        self.nonbinary = Stat()
+        self.male = Stat()
+        self.female = Stat()
+        self.andy = Stat()
+        self.ids_sampled = ids_sampled
+        self.ids_fetched = ids_fetched
+
+    def update(self, gender, declared):
+        attr = getattr(self, gender)
+        attr.n += 1
+        if declared:
+            attr.n_declared += 1
+
+    def guessed(self, gender=None):
+        if gender:
+            attr = getattr(self, gender)
+            return attr.n - attr.n_declared
+        
+        return (self.guessed('nonbinary') 
+                + self.guessed('male') 
+                + self.guessed('female'))
+
+    def declared(self, gender=None):
+        if gender:
+            attr = getattr(self, gender)
+            return attr.n_declared
+        
+        return (self.nonbinary.n_declared
+                + self.male.n_declared
+                + self.female.n_declared)
+
+    def pct(self, gender):
+        attr = getattr(self, gender)
+        return div(100 * attr.n, self.nonbinary.n + self.male.n + self.female.n)
+
+
+def dry_run_analysis():
+    friends = Analysis(250, 400)
+    friends.nonbinary.n = 10
+    friends.nonbinary.n_declared = 10
+    friends.male.n = 200
+    friends.male.n_declared = 20
+    friends.female.n = 40
+    friends.female.n_declared = 5
+    friends.andy.n = 250
+
+    followers = Analysis(250, 400)
+    followers.nonbinary.n = 10
+    followers.nonbinary.n_declared = 10
+    followers.male.n = 200
+    followers.male.n_declared = 20
+    followers.female.n = 40
+    followers.female.n_declared = 5
+    followers.andy.n = 250
+
+    return friends, followers
+
+
+def analyze_users(users, ids_fetched=None):
+    an = Analysis(ids_sampled=len(users), ids_fetched=ids_fetched)
 
     for user in users:
-        g = analyze_user(user)
+        g, declared = analyze_user(user)
+        an.update(g, declared)
 
-        if g == 'nonbinary':
-            result['nonbinary'] += 1
-        elif g in ('male', 'mostly_male'):
-            result['men'] += 1
-        elif g in ('female', 'mostly_female'):
-            result['women'] += 1
-        else:
-            result['andy'] += 1
-
-    return result
+    return an
 
 
 def batch(it, size):
@@ -192,7 +264,6 @@ def analyze_self(user_id, consumer_key, consumer_secret,
 
 def analyze_friends(user_id, list_id, consumer_key, consumer_secret,
                     oauth_token, oauth_token_secret):
-    result = {'ids_fetched': 0, 'ids_sampled': 0}
     api = get_twitter_api(consumer_key, consumer_secret,
                           oauth_token, oauth_token_secret)
 
@@ -211,8 +282,6 @@ def analyze_friends(user_id, list_id, consumer_key, consumer_secret,
         if nxt == 0 or nxt == prev:
             break
 
-    result['ids_fetched'] = len(friend_ids)
-
     # We can fetch users' details 100 at a time.
     if len(friend_ids) > 100 * MAX_USERS_LOOKUP_CALLS:
         friend_id_sample = random.sample(friend_ids,
@@ -220,18 +289,15 @@ def analyze_friends(user_id, list_id, consumer_key, consumer_secret,
     else:
         friend_id_sample = friend_ids
 
-    result['ids_sampled'] = len(friend_id_sample)
     users = []
     for ids in batch(friend_id_sample, 100):
         users.extend(api.UsersLookup(ids))
 
-    result.update(analyze_users(users))
-    return result
+    return analyze_users(users, ids_fetched=len(friend_ids))
 
 
 def analyze_followers(user_id, consumer_key, consumer_secret,
                       oauth_token, oauth_token_secret):
-    result = {'ids_fetched': 0, 'ids_sampled': 0}
     api = get_twitter_api(consumer_key, consumer_secret,
                           oauth_token, oauth_token_secret)
     nxt = -1
@@ -243,8 +309,6 @@ def analyze_followers(user_id, consumer_key, consumer_secret,
         if nxt == 0 or nxt == prev:
             break
 
-    result['ids_fetched'] = len(follower_ids)
-
     # We can fetch users' details 100 at a time.
     if len(follower_ids) > 100 * MAX_USERS_LOOKUP_CALLS:
         follower_id_sample = random.sample(follower_ids,
@@ -252,20 +316,11 @@ def analyze_followers(user_id, consumer_key, consumer_secret,
     else:
         follower_id_sample = follower_ids
 
-    result['ids_sampled'] = len(follower_id_sample)
     users = []
     for ids in batch(follower_id_sample, 100):
         users.extend(api.UsersLookup(ids))
 
-    result.update(analyze_users(users))
-    return result
-
-
-def div(num, denom):
-    if denom:
-        return num / float(denom)
-
-    return 0
+    return analyze_users(users, ids_fetched=len(follower_ids))
 
 
 # From https://github.com/bear/python-twitter/blob/master/get_access_token.py
@@ -332,6 +387,7 @@ if __name__ == '__main__':
     p.add_argument('user_id', nargs=1)
     p.add_argument('--self', help="perform gender analysis on user_id itself",
                    action="store_true")
+    p.add_argument('--dry-run', help="fake results", action="store_true")
     args = p.parse_args()
     [user_id] = args.user_id
 
@@ -341,30 +397,47 @@ if __name__ == '__main__':
     consumer_secret = (os.environ.get('CONSUMER_SECRET') or
                        raw_input('Enter your consumer secret: '))
 
-    tok, tok_secret = get_access_token(consumer_key, consumer_secret)
+    if args.dry_run:
+        tok, tok_secret = None, None
+    else:
+        tok, tok_secret = get_access_token(consumer_key, consumer_secret)
 
     if args.self:
-        print(analyze_self(user_id, consumer_key, consumer_secret,
-                           tok, tok_secret))
+        if args.dry_run:
+            g, declared = 'male', True
+        else:
+            g, declared = analyze_self(user_id, consumer_key, consumer_secret,
+                                       tok, tok_secret)
+
+        print('{} ({})'.format(g, 'declared pronoun' if declared else 'guess'))
         sys.exit()
 
-    print("{:>10s}\t{:>10s}\t{:>10s}\t{:>10s}\t{:>10s}".format(
-        '', 'nonbinary', 'men', 'women', 'unknown'))
+    print("{:>25s}\t{:>10s}\t{:>10s}\t{:>10s}\t{:>10s}".format(
+        '', 'NONBINARY', 'MEN', 'WOMEN', 'UNKNOWN'))
 
-    for user_type, users in [
-        ('friends', analyze_friends(user_id, None, consumer_key, consumer_secret,
-                                    tok, tok_secret)),
-        ('followers', analyze_followers(user_id, consumer_key, consumer_secret,
-                                        tok, tok_secret)),
-    ]:
-        nonbinary, men, women, andy = (
-            users['nonbinary'], users['men'], users['women'], users['andy'])
+    if args.dry_run:
+        friends, followers = dry_run_analysis()
+    else:
+        friends = analyze_friends(user_id, None, consumer_key, consumer_secret,
+                                  tok, tok_secret)
+        followers = analyze_followers(user_id, consumer_key, consumer_secret,
+                                      tok, tok_secret)
 
-        print("{:>10s}\t{:>10d}\t{:10d}\t{:10d}\t{:10d}".format(
-            user_type, nonbinary, men, women, andy))
+    for user_type, an in [('friends', friends), ('followers', followers)]:
+        nb, men, women, andy = an.nonbinary.n, an.male.n, an.female.n, an.andy.n
 
-        print("{:>10s}\t{:>10.2f}\t{:10.2f}\t{:10.2f}".format(
-            '',
-            div(100 * nonbinary, nonbinary + men + women),
-            div(100 * men, nonbinary + men + women),
-            div(100 * women, nonbinary + men + women)))
+        print("{:>25s}\t{:>10.2f}%\t{:10.2f}%\t{:10.2f}%".format(
+            user_type, an.pct('nonbinary'), an.pct('male'), an.pct('female')))
+
+        print("{:>25s}\t{:>10d} \t{:10d} \t{:10d} \t{:10d}".format(
+            'Guessed from name:',
+            an.guessed('nonbinary'),
+            an.guessed('male'),
+            an.guessed('female'),
+            an.andy.n))
+
+        print("{:>25s}\t{:>10d} \t{:10d} \t{:10d}".format(
+            'Declared pronouns:',
+            an.declared('nonbinary'),
+            an.declared('male'),
+            an.declared('female')))

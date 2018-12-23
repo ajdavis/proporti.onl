@@ -7,10 +7,18 @@
 <title>Proporti.onl: Gender distribution of People You Follow and Followers on Twitter</title>
 <link rel="shortcut icon" href="//static/favicon.png" type="image/png" />
 <style type="text/css">
+/* override Bootstrap */
+.table>tbody>tr>td {
+  vertical-align: middle;
+}
 .row {
   margin-bottom: 1em;
 }
 td.td-important {
+  font-weight: bold;
+  font-size: x-large;
+}
+td.td-first-col {
   font-weight: bold;
   font-size: large;
 }
@@ -61,7 +69,7 @@ td.td-important {
     var alertDiv = target.parentElement.parentElement;
     alertDiv.classList.add('alert-container-disappear');
   }
-  
+
   function analyze_click() {
     var button = document.getElementById("analyze-button");
     button.disabled = true;
@@ -164,8 +172,11 @@ td.td-important {
 
     {% if results %}
       <h2>Results for @{{ form.user_id.data }}</h2>
-      <p>Sampled {{ results.friends.ids_sampled }} people you follow {% if list_name %} in list "{{ list_name }}" {% endif %} and {{ results.followers.ids_sampled }} followers.</p>
-      <table class="table" style="table-layout: fixed;">
+      <p>
+        Sampled {{ results.friends.ids_sampled }} people you follow {% if list_name %} in list "{{ list_name }}" {% endif %} and {{ results.followers.ids_sampled }} followers.
+        Gender estimate based on {{ results.friends.declared() + results.followers.declared() }} Twitter bios with declared pronouns like "she/her" and {{ results.friends.guessed() + results.followers.guessed() }} genders guessed from first names.
+      </p>
+      <table class="table" style="table-layout: fixed; white-space: nowrap">
         <thead><tr>
           <th class="col-md-1">&nbsp;</th>
           <th class="col-md-1">nonbinary</th>
@@ -175,13 +186,14 @@ td.td-important {
         </tr></thead>
         {% for user_type, users in [('People you follow', results.friends), ('Followers', results.followers)] %}
         <tr>
-          <td>{{ user_type }}</td>
-          <td class="td-important">{{ div(100 * users.nonbinary, users.nonbinary + users.men + users.women)|round|int }}%</td>
-          <td class="td-important">{{ div(100 * users.men, users.nonbinary + users.men + users.women)|round|int }}%</td>
-          <td class="td-important">{{ div(100 * users.women, users.nonbinary + users.men + users.women)|round|int }}%</td>
+          <td class="td-first-col">{{ user_type }}</td>
+          <td class="td-important">{{ users.pct('nonbinary')|round|int }}%</td>
+          <td class="td-important">{{ users.pct('male')|round|int }}%</td>
+          <td class="td-important">{{ users.pct('female')|round|int }}%</td>
           <td>&nbsp;</td>
         </tr>
-        <tr><td>&nbsp;</td><td>{{ users.nonbinary }}</td><td>{{ users.men }}</td><td>{{ users.women }}</td><td>{{ users.andy }}</td></tr>
+        <tr><td>Guessed from name</td><td>{{ users.guessed('nonbinary') }}</td><td>{{ users.guessed('male') }}</td><td>{{ users.guessed('female') }}</td><td>{{ users.andy.n }}</td></tr>
+        <tr><td>Declared pronouns</td><td>{{ users.nonbinary.n_declared }}</td><td>{{ users.male.n_declared }}</td><td>{{ users.female.n_declared }}</td><td>&nbsp;</td></tr>
         {% endfor %}
       </table>
     {% endif %}
