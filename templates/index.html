@@ -7,6 +7,9 @@
 <title>Proporti.onl: Gender distribution of People You Follow and Followers on Twitter</title>
 <link rel="shortcut icon" href="//static/favicon.png" type="image/png" />
 <style type="text/css">
+.row {
+  margin-bottom: 1em;
+}
 td.td-important {
   font-weight: bold;
   font-size: large;
@@ -98,93 +101,98 @@ td.td-important {
 </script>
 
 <div class="container-fluid">
-  <div class="col-md-8 col-md-offset-1">
+  <div class="row">
+    <div class="col-md-8 col-md-offset-1">
 
-  {% with messages = get_flashed_messages() %}
-    {% if messages %}
-      {% for message in messages %}
-        <div class="alert-container">
-        <div class="alert alert-info">
-          <button type="button" class="close" onclick="close_alert(this)">&times;</button>
-          {{ message }}
-        </div>
-        </div>
-    {% endfor %}
-      </ul>
-    {% endif %}
-  {% endwith %}
-
-  <h1>Proport<span style="letter-spacing: -0.02em">i</span><span style="color: #b4b4b4; letter-spacing: -0.06em"">.</span>onl</h1>
-  <h1 class="lead">Estimate the gender distribution of your followers and those you follow,<br>
-    based on their profile descriptions or first names.</h1>
-  <p><a href="https://www.theguardian.com/technology/2016/oct/04/twitter-women-gender-elon-musk-tim-cook">Many tech leaders follow mostly men</a>, but I want to follow a diverse group of people.</p>
-  <p>Twitter Analytics doesn't tell me the gender distribution of those I follow, and it doesn't try to identify gender-nonbinary people.
-    So I built this tool for myself and <a href="https://github.com/ajdavis/twitter-gender-distribution/">put it on GitHub</a>. It's inaccurate and it undercounts nonbinary folk, but it's better than making no effort at all.
-  </p>
-  <p>I want you to be able to do this, too. Estimate the distribution of those you follow and see if there's room to improve!</p>
-  <hr>
-
-  {% if session.get('twitter_user') %}
-    <h4>Hello, @{{ session.twitter_user }}.</h4>
-    <p><a href="/logout">Deauthorize this application with Twitter.</a></p>
-    <hr>
-    <form method="post" onsubmit="return analyze_click()">
-      <div class="form-group">
-        <label for="user_id">Twitter User:</label>
-        <div class="input-group col-xs-4">
-          <span class="input-group-addon">@</span>
-          <input type="text" class="form-control" name="user_id" id="user_id"
-            value="{{ form.user_id.data|default(session.twitter_user, true) }}">
-        </div>
-        {% if form.lst %}
-          <label for="lst">List:</label>
-          <div class="input-group col-xs-4">
-            {{ form.lst(class_="form-control") }}
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        {% for message in messages %}
+          <div class="alert-container">
+          <div class="alert alert-info">
+            <button type="button" class="close" onclick="close_alert(this)">&times;</button>
+            {{ message }}
           </div>
-        {% endif %}
-      </div>
-      <button id="analyze-button" type="submit" class="btn btn-primary">
-        <span id="analyze-loading" style="display: none;">
-          <span class="glyphicon glyphicon-refresh spinning"></span> Loading (this can take up to a minute) </span>
-        <span id="analyze-button-text" >Analyze</span>
-      </button>
-    </form>
-  {% else %}
-    <a href="/login" class="btn btn-primary">Log in with Twitter</a>
-  {% endif %}
-
-  {% if error %}
-    <h2>Error</h2>
-    <p>{{ error }}</p>
-  {% endif %}
-
-  {% if results %}
-    <h2>Results for @{{ form.user_id.data }}</h2>
-    <p>Sampled {{ results.friends.ids_sampled }} people you follow {% if list_name %} in list "{{ list_name }}" {% endif %} and {{ results.followers.ids_sampled }} followers.</p>
-    <table class="table" style="table-layout: fixed;">
-      <thead><tr>
-        <th class="col-md-1">&nbsp;</th>
-        <th class="col-md-1">nonbinary</th>
-        <th class="col-md-1">men</th>
-        <th class="col-md-1">women</th>
-        <th class="col-md-1" style="font-weight: normal">no gender,<br>unknown</th>
-      </tr></thead>
-      {% for user_type, users in [('People you follow', results.friends), ('Followers', results.followers)] %}
-      <tr>
-        <td>{{ user_type }}</td>
-        <td class="td-important">{{ div(100 * users.nonbinary, users.nonbinary + users.men + users.women)|round|int }}%</td>
-        <td class="td-important">{{ div(100 * users.men, users.nonbinary + users.men + users.women)|round|int }}%</td>
-        <td class="td-important">{{ div(100 * users.women, users.nonbinary + users.men + users.women)|round|int }}%</td>
-        <td>&nbsp;</td>
-      </tr>
-      <tr><td>&nbsp;</td><td>{{ users.nonbinary }}</td><td>{{ users.men }}</td><td>{{ users.women }}</td><td>{{ users.andy }}</td></tr>
+          </div>
       {% endfor %}
-    </table>
-  {% endif %}
+        </ul>
+      {% endif %}
+    {% endwith %}
 
+    <h1>Proport<span style="letter-spacing: -0.02em">i</span><span style="color: #b4b4b4; letter-spacing: -0.06em"">.</span>onl</h1>
+    <h1 class="lead">Estimate the gender distribution of your followers and those you follow,<br>
+      based on their profile descriptions or first names.</h1>
+    <p><a href="https://www.theguardian.com/technology/2016/oct/04/twitter-women-gender-elon-musk-tim-cook">Many tech leaders follow mostly men</a>, but I want to follow a diverse group of people.</p>
+    <p>Twitter Analytics doesn't tell me the gender distribution of those I follow, and it doesn't try to identify gender-nonbinary people.
+      So I built this tool for myself and <a href="https://github.com/ajdavis/twitter-gender-distribution/">put it on GitHub</a>. It's inaccurate and it undercounts nonbinary folk, but it's better than making no effort at all.
+    </p>
+    <p>I want you to be able to do this, too. Estimate the distribution of those you follow and see if there's room to improve!</p>
+    <hr>
+
+    {% if session.get('twitter_user') %}
+      <h4>Hello, @{{ session.twitter_user }}.</h4>
+      <p><a href="/logout">Deauthorize this application with Twitter.</a></p>
+      <hr>
+      <form method="post" onsubmit="return analyze_click()">
+        <div class="form-group">
+          <label for="user_id">Twitter User:</label>
+          <div class="input-group col-xs-4">
+            <span class="input-group-addon">@</span>
+            <input type="text" class="form-control" name="user_id" id="user_id"
+              value="{{ form.user_id.data|default(session.twitter_user, true) }}">
+          </div>
+          {% if form.lst %}
+            <label for="lst">List:</label>
+            <div class="input-group col-xs-4">
+              {{ form.lst(class_="form-control") }}
+            </div>
+          {% endif %}
+        </div>
+        <button id="analyze-button" type="submit" class="btn btn-primary">
+          <span id="analyze-loading" style="display: none;">
+            <span class="glyphicon glyphicon-refresh spinning"></span> Loading (this can take up to a minute) </span>
+          <span id="analyze-button-text" >Analyze</span>
+        </button>
+      </form>
+    {% else %}
+      <a href="/login" class="btn btn-primary">Log in with Twitter</a>
+    {% endif %}
+
+    {% if error %}
+      <h2>Error</h2>
+      <p>{{ error }}</p>
+    {% endif %}
+
+    {% if results %}
+      <h2>Results for @{{ form.user_id.data }}</h2>
+      <p>Sampled {{ results.friends.ids_sampled }} people you follow {% if list_name %} in list "{{ list_name }}" {% endif %} and {{ results.followers.ids_sampled }} followers.</p>
+      <table class="table" style="table-layout: fixed;">
+        <thead><tr>
+          <th class="col-md-1">&nbsp;</th>
+          <th class="col-md-1">nonbinary</th>
+          <th class="col-md-1">men</th>
+          <th class="col-md-1">women</th>
+          <th class="col-md-1" style="font-weight: normal">no gender,<br>unknown</th>
+        </tr></thead>
+        {% for user_type, users in [('People you follow', results.friends), ('Followers', results.followers)] %}
+        <tr>
+          <td>{{ user_type }}</td>
+          <td class="td-important">{{ div(100 * users.nonbinary, users.nonbinary + users.men + users.women)|round|int }}%</td>
+          <td class="td-important">{{ div(100 * users.men, users.nonbinary + users.men + users.women)|round|int }}%</td>
+          <td class="td-important">{{ div(100 * users.women, users.nonbinary + users.men + users.women)|round|int }}%</td>
+          <td>&nbsp;</td>
+        </tr>
+        <tr><td>&nbsp;</td><td>{{ users.nonbinary }}</td><td>{{ users.men }}</td><td>{{ users.women }}</td><td>{{ users.andy }}</td></tr>
+        {% endfor %}
+      </table>
+    {% endif %}
+
+    </div>
   </div>
-  <div class="col-md-8 col-md-offset-1">
-    <h5><a href="https://emptysqua.re/blog/gender-of-twitter-users-i-follow/">About the algorithm.</a></h5>
+  <div class="row">
+    <div class="col-md-8 col-md-offset-1">
+      <p>You must log in to prevent Twitter from rate-limiting this tool. I access only your public information, and nothing is stored.</p>
+      <h5><a href="https://emptysqua.re/blog/gender-of-twitter-users-i-follow/">About the algorithm.</a></h5>
+    </div>
   </div>
 </div>
 <script>
