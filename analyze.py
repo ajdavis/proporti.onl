@@ -92,6 +92,8 @@ def declared_gender(description):
     for p, g in _PRONOUN_PATTERNS:
         if p.search(dl):
             guesses.add(g)
+            if len(guesses) > 1:
+                return 'andy'  # Several guesses: don't know.
 
     if len(guesses) == 1:
         return next(iter(guesses))
