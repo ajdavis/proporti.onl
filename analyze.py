@@ -35,14 +35,7 @@ def rm_punctuation(s):
     return string.translate(s.encode("utf-8"), None, nonletter).strip()
 
 
-def declared_gender(description):
-    dl = description.lower()
-    if ('pronoun.is' in dl and
-        'pronoun.is/she' not in dl and
-        'pronoun.is/he' not in dl):
-        return 'nonbinary'
-
-    guesses = set()
+def make_pronoun_patterns():
     for p, g in [('non binary', 'nonbinary'),
                  ('non-binary', 'nonbinary'),
                  ('nonbinary', 'nonbinary'),
@@ -82,8 +75,23 @@ def declared_gender(description):
                      r'\b' + p + r'/',
                      r'\b' + p + r' /',
                      r'pronoun\.is/' + p):
-            if re.compile(text).search(dl):
-                guesses.add(g)
+            yield re.compile(text), g
+
+
+_PRONOUN_PATTERNS = list(make_pronoun_patterns())
+
+
+def declared_gender(description):
+    dl = description.lower()
+    if ('pronoun.is' in dl and
+            'pronoun.is/she' not in dl and
+            'pronoun.is/he' not in dl):
+        return 'nonbinary'
+
+    guesses = set()
+    for p, g in _PRONOUN_PATTERNS:
+        if p.search(dl):
+            guesses.add(g)
 
     if len(guesses) == 1:
         return next(iter(guesses))
@@ -168,16 +176,16 @@ class Analysis(object):
         if gender:
             attr = getattr(self, gender)
             return attr.n - attr.n_declared
-        
-        return (self.guessed('nonbinary') 
-                + self.guessed('male') 
+
+        return (self.guessed('nonbinary')
+                + self.guessed('male')
                 + self.guessed('female'))
 
     def declared(self, gender=None):
         if gender:
             attr = getattr(self, gender)
             return attr.n_declared
-        
+
         return (self.nonbinary.n_declared
                 + self.male.n_declared
                 + self.female.n_declared)
