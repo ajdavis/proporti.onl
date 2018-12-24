@@ -36,7 +36,7 @@ class TestDeclaredGender(unittest.TestCase):
             ('pronoun.is/foo', 'nonbinary'),
             ('pronoun.is/zie', 'nonbinary'),
             ('pronoun.is/hir', 'nonbinary'),
-            ('mum to one boy and one girl', 'female'),
+            ('mum to one boy and one girl', 'andy'),
             ('proud mom', 'female'),
             ('cardamom', 'andy'),
             ('doting dad', 'male'),

@@ -42,6 +42,7 @@ def declared_gender(description):
         'pronoun.is/he' not in dl):
         return 'nonbinary'
 
+    guesses = set()
     for p, g in [('non binary', 'nonbinary'),
                  ('non-binary', 'nonbinary'),
                  ('nonbinary', 'nonbinary'),
@@ -82,9 +83,12 @@ def declared_gender(description):
                      r'\b' + p + r' /',
                      r'pronoun\.is/' + p):
             if re.compile(text).search(dl):
-                return g
+                guesses.add(g)
 
-    return 'andy'  # Don't know.
+    if len(guesses) == 1:
+        return next(iter(guesses))
+
+    return 'andy'  # Zero or several guesses: don't know.
 
 
 def analyze_user(user, verbose=False):
