@@ -1,6 +1,5 @@
 flask
 flask-oauth
-flask-sslify
 python-twitter
 SexMachine
 unidecode

@@ -3,7 +3,6 @@ import os
 
 from flask import Flask, flash, redirect, render_template, request, session
 from flask_oauth import OAuth
-from flask_sslify import SSLify
 from wtforms import Form, StringField, SelectField
 
 from analyze import (analyze_followers,
@@ -148,15 +147,9 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--debug', action='store_true')
     parser.add_argument('--dry-run', action='store_true')
-    parser.add_argument('--no-ssl', action='store_true', default=False,
-                        dest='nossl')
     parser.add_argument('port', nargs=1, type=int)
     args = parser.parse_args()
     [port] = args.port
-
-    if not args.nossl:
-        # Force SSL.
-        sslify = SSLify(app)
 
     app.config['DRY_RUN'] = args.dry_run
     app.run(port=port, debug=args.debug)

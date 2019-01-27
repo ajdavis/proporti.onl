@@ -47,5 +47,5 @@ Website
 Start a Flask server for testing:
 
 ```
-CONSUMER_KEY=foo CONSUMER_SECRET=bar COOKIE_SECRET=baz python2.7 server.py --no-ssl 8000
+CONSUMER_KEY=foo CONSUMER_SECRET=bar COOKIE_SECRET=baz python2.7 server.py 8000
 ```
