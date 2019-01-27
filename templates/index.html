@@ -138,7 +138,7 @@ td.td-first-col {
 
     {% if session.get('twitter_user') %}
       <h4>Hello, @{{ session.twitter_user }}.</h4>
-	    <p><a href="/logout">Logout</a>. To deauthorize this application with Twitter, visit <a href="https://twitter.com/settings/sessions">Your App Settings</a>.</p>
+	    <p><a href="/logout">Logout</a></p>
       <hr>
       <form method="post" onsubmit="return analyze_click()">
         <div class="form-group">
@@ -202,7 +202,12 @@ td.td-first-col {
   </div>
   <div class="row">
     <div class="col-md-8 col-md-offset-1">
-      <p>You must log in to prevent Twitter from rate-limiting this tool. I access only your public information, and nothing is stored.</p>
+      <div style="color: #9f9f9f; margin-top: 1.5em">
+        <p>You must log in to prevent Twitter from rate-limiting this tool. I access only your public information, and nothing is stored.</p>
+        {% if session.get('twitter_user') %}
+          <p>To completely deauthorize this application with Twitter, visit <a style="color: #9f9f9f" href="https://twitter.com/settings/sessions">Your App Settings</a>.</p>
+        {% endif %}
+      </div>
       <h5><a href="https://emptysqua.re/blog/gender-of-twitter-users-i-follow/">About the algorithm.</a></h5>
     </div>
   </div>
