@@ -44,8 +44,8 @@ python2.7 -m unittest discover -v
 Website
 -------
 
-Start a Flask server:
+Start a Flask server for testing:
 
 ```
-python2.7 server.py 80
+CONSUMER_KEY=foo CONSUMER_SECRET=bar COOKIE_SECRET=baz python2.7 server.py --no-ssl 8000
 ```
