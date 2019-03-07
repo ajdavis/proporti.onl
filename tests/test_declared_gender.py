@@ -17,6 +17,7 @@ class TestDeclaredGender(unittest.TestCase):
             ('non binary human', 'nonbinary'),
             ('just a guy living life', 'male'),
             ('a southern gal', 'female'),
+            ('womanist', 'female'),
             ('he', 'male'),
             ('he/him', 'male'),
             ('he,him', 'male'),

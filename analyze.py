@@ -46,6 +46,7 @@ def make_pronoun_patterns():
                  ('boy', 'male'),
                  ('guy', 'male'),
                  ('woman', 'female'),
+                 ('womanist', 'female'),
                  ('female', 'female'),
                  ('girl', 'female'),
                  ('gal', 'female'),
