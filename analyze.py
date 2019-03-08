@@ -50,6 +50,8 @@ def make_pronoun_patterns():
                  ('female', 'female'),
                  ('girl', 'female'),
                  ('gal', 'female'),
+                 ('latina', 'female'),
+                 ('latino', 'male'),
                  ('dad', 'male'),
                  ('mum', 'female'),
                  ('mom', 'female'),
