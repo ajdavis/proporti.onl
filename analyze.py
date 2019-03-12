@@ -1,3 +1,4 @@
+import json
 import os
 import pickle
 import random
@@ -219,7 +220,16 @@ def dry_run_analysis():
     followers.female.n_declared = 5
     followers.andy.n = 250
 
-    return friends, followers
+    timeline = Analysis(250, 400)
+    timeline.nonbinary.n = 10
+    timeline.nonbinary.n_declared = 10
+    timeline.male.n = 200
+    timeline.male.n_declared = 20
+    timeline.female.n = 40
+    timeline.female.n_declared = 5
+    timeline.andy.n = 250
+
+    return friends, followers, timeline
 
 
 def analyze_users(users, ids_fetched=None):
@@ -339,6 +349,29 @@ def analyze_followers(user_id, consumer_key, consumer_secret,
 
     return analyze_users(users, ids_fetched=len(follower_ids))
 
+def analyze_timeline(list_id, consumer_key, consumer_secret,
+                      oauth_token, oauth_token_secret):
+    api = get_twitter_api(consumer_key, consumer_secret,
+                          oauth_token, oauth_token_secret)
+    
+    # Timeline-functions are limited to 200 statuses
+    if list_id is not None:
+      statuses = api.GetListTimeline(list_id=list_id, count=200)
+    else:
+      statuses = api.GetHomeTimeline(count=200)
+    
+    timeline_ids = []
+    for s in statuses:
+      timeline_ids.append(json.loads(s.AsJsonString())["user"]["id"])
+
+    # Reduce to unique list of ids
+    timeline_ids = list(set(timeline_ids))
+    
+    users = []
+    users.extend(api.UsersLookup(timeline_ids))
+
+    return analyze_users(users, ids_fetched=len(timeline_ids))
+
 
 # From https://github.com/bear/python-twitter/blob/master/get_access_token.py
 def get_access_token(consumer_key, consumer_secret):
@@ -400,7 +433,8 @@ if __name__ == '__main__':
     import argparse
 
     p = argparse.ArgumentParser(description='Estimate gender distribution of '
-                                            'Twitter friends and followers')
+                                            'Twitter friends, followers and'
+                                            'your timeline')
     p.add_argument('user_id', nargs=1)
     p.add_argument('--self', help="perform gender analysis on user_id itself",
                    action="store_true")
@@ -433,14 +467,17 @@ if __name__ == '__main__':
         '', 'NONBINARY', 'MEN', 'WOMEN', 'UNKNOWN'))
 
     if args.dry_run:
-        friends, followers = dry_run_analysis()
+        friends, followers, timeline = dry_run_analysis()
     else:
         friends = analyze_friends(user_id, None, consumer_key, consumer_secret,
                                   tok, tok_secret)
         followers = analyze_followers(user_id, consumer_key, consumer_secret,
                                       tok, tok_secret)
+        timeline = analyze_timeline(None, consumer_key, consumer_secret,
+                                      tok, tok_secret)
 
-    for user_type, an in [('friends', friends), ('followers', followers)]:
+    for user_type, an in [('friends', friends), ('followers', followers), 
+                          ('timeline', timeline)]:
         nb, men, women, andy = an.nonbinary.n, an.male.n, an.female.n, an.andy.n
 
         print("{:>25s}\t{:>10.2f}%\t{:10.2f}%\t{:10.2f}%".format(

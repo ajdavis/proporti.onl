@@ -7,6 +7,7 @@ from wtforms import Form, StringField, SelectField
 
 from analyze import (analyze_followers,
                      analyze_friends,
+                     analyze_timeline,
                      div,
                      dry_run_analysis,
                      get_friends_lists)
@@ -110,9 +111,10 @@ def index():
 
         if app.config['DRY_RUN']:
             list_name = list_id = None
-            friends, followers = dry_run_analysis()
+            friends, followers, timeline = dry_run_analysis()
             results = {'friends': friends,
-                       'followers': followers}
+                       'followers': followers,
+                       'timeline': timeline}
         else:
             if session.get('lists') and form.lst and form.lst.data != 'none':
                 list_id = int(form.lst.data)
@@ -130,7 +132,12 @@ def index():
                                                           CONSUMER_KEY,
                                                           CONSUMER_SECRET,
                                                           oauth_token,
-                                                          oauth_token_secret)}
+                                                          oauth_token_secret),
+                           'timeline': analyze_timeline(list_id,
+                                                        CONSUMER_KEY,
+                                                        CONSUMER_SECRET,
+                                                        oauth_token,
+                                                        oauth_token_secret)}
             except Exception as exc:
                 import traceback
                 traceback.print_exc()
