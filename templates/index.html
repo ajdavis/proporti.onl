@@ -25,9 +25,9 @@ td.td-first-col {
 .alert-container {
   max-height: 100px;
   overflow: hidden;
-	transition-property: all;
-	transition-duration: .5s;
-	transition-timing-function: cubic-bezier(0, 1, 0.5, 1);
+  transition-property: all;
+  transition-duration: .5s;
+  transition-timing-function: cubic-bezier(0, 1, 0.5, 1);
 }
 
 .alert-container-disappear {
@@ -138,7 +138,7 @@ td.td-first-col {
 
     {% if session.get('twitter_user') %}
       <h4>Hello, @{{ session.twitter_user }}.</h4>
-	    <p><a href="/logout">Logout</a></p>
+      <p><a href="/logout">Logout</a></p>
       <hr>
       <form method="post" onsubmit="return analyze_click()">
         <div class="form-group">
@@ -173,8 +173,8 @@ td.td-first-col {
     {% if results %}
       <h2>Results for @{{ form.user_id.data }}</h2>
       <p>
-        Sampled {{ results.friends.ids_sampled }} people you follow {% if list_name %} in list "{{ list_name }}" {% endif %} and {{ results.followers.ids_sampled }} followers.
-        Gender estimate based on {{ results.friends.declared() + results.followers.declared() }} Twitter bios with declared pronouns like "she/her" and {{ results.friends.guessed() + results.followers.guessed() }} genders guessed from first names.
+        Sampled {{ results.friends.ids_sampled }} people you follow{% if list_name %} in list"{{ list_name }}" {% endif %}, {{ results.followers.ids_sampled }} followers and {{ results.timeline.ids_sampled }} users from the latest 200 tweets in your timeline.
+        Gender estimate based on {{ results.friends.declared() + results.followers.declared() + results.timeline.declared() }} Twitter bios with declared pronouns like "she/her" and {{ results.friends.guessed() + results.followers.guessed() + results.timeline.guessed() }} genders guessed from first names.
       </p>
       <table class="table" style="table-layout: fixed; white-space: nowrap">
         <thead><tr>
@@ -184,7 +184,7 @@ td.td-first-col {
           <th class="col-md-1">women</th>
           <th class="col-md-1" style="font-weight: normal">no gender,<br>unknown</th>
         </tr></thead>
-        {% for user_type, users in [('People you follow', results.friends), ('Followers', results.followers)] %}
+        {% for user_type, users in [('People you follow', results.friends), ('Followers', results.followers), ('Timeline', results.timeline)] %}
         <tr>
           <td class="td-first-col">{{ user_type }}</td>
           <td class="td-important">{{ users.pct('nonbinary')|round|int }}%</td>
