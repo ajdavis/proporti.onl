@@ -8,6 +8,7 @@ from wtforms import Form, StringField, SelectField
 from analyze import (analyze_followers,
                      analyze_friends,
                      analyze_timeline,
+                     Cache,
                      div,
                      dry_run_analysis,
                      get_friends_lists,
@@ -98,8 +99,8 @@ def index():
     form = AnalyzeForm(request.form)
     if session.get('lists'):
         form.lst.choices = (
-           [('none', 'No list')]
-           + [(unicode(l['id']), l['name']) for l in session['lists']]
+            [('none', 'No list')]
+            + [(unicode(l['id']), l['name']) for l in session['lists']]
         )
     else:
         del form.lst
@@ -109,7 +110,7 @@ def index():
     if request.method == 'POST' and form.validate() and form.user_id.data:
         # Don't show auth'ed user's lists in results for another user.
         if (hasattr(form, 'lst')
-                and form.user_id.data != session.get('twitter_user')):
+            and form.user_id.data != session.get('twitter_user')):
             del form.lst
 
         if app.config['DRY_RUN']:
@@ -127,10 +128,14 @@ def index():
             try:
                 api = get_twitter_api(CONSUMER_KEY, CONSUMER_SECRET,
                                       oauth_token, oauth_token_secret)
+                cache = Cache()
                 results = {
-                    'friends': analyze_friends(form.user_id.data, list_id, api),
-                    'followers': analyze_followers(form.user_id.data, api),
-                    'timeline': analyze_timeline(list_id, api)}
+                    'friends': analyze_friends(
+                        form.user_id.data, list_id, api, cache),
+                    'followers': analyze_followers(
+                        form.user_id.data, api, cache),
+                    'timeline': analyze_timeline(
+                        list_id, api, cache)}
             except Exception as exc:
                 import traceback
                 traceback.print_exc()

@@ -4,6 +4,7 @@ import random
 import re
 import string
 import sys
+import time
 import warnings
 import webbrowser
 
@@ -82,6 +83,29 @@ def make_pronoun_patterns():
 
 
 _PRONOUN_PATTERNS = list(make_pronoun_patterns())
+
+
+class Cache(object):
+    def __init__(self):
+        self._users = {}
+        self._hits = self._misses = 0
+
+    @property
+    def hit_percentage(self):
+        return (100 * self._hits) / (self._hits + self._misses)
+
+    def UsersLookup(self, user_ids):
+        rv = [self._users[uid] for uid in user_ids if uid in self._users]
+        self._hits += len(rv)
+        self._misses += len(user_ids) - len(rv)
+        return rv
+
+    def UncachedUsers(self, user_ids):
+        return list(set(user_ids) - set(self._users))
+
+    def AddUsers(self, profiles):
+        for p in profiles:
+            self._users[p.id] = p
 
 
 def declared_gender(description):
@@ -284,7 +308,18 @@ def analyze_self(user_id, api):
     return analyze_user(users[0])
 
 
-def analyze_friends(user_id, list_id, api):
+def fetch_users(user_ids, api, cache):
+    users = []
+    users.extend(cache.UsersLookup(user_ids))
+    for ids in batch(cache.UncachedUsers(user_ids), 100):
+        results = api.UsersLookup(ids)
+        cache.AddUsers(results)
+        users.extend(results)
+
+    return users
+
+
+def analyze_friends(user_id, list_id, api, cache):
     nxt = -1
     friend_ids = []
     for _ in range(MAX_GET_FRIEND_IDS_CALLS):
@@ -307,14 +342,11 @@ def analyze_friends(user_id, list_id, api):
     else:
         friend_id_sample = friend_ids
 
-    users = []
-    for ids in batch(friend_id_sample, 100):
-        users.extend(api.UsersLookup(ids))
-
+    users = fetch_users(friend_id_sample, api, cache)
     return analyze_users(users, ids_fetched=len(friend_ids))
 
 
-def analyze_followers(user_id, api):
+def analyze_followers(user_id, api, cache):
     nxt = -1
     follower_ids = []
     for _ in range(MAX_GET_FOLLOWER_IDS_CALLS):
@@ -331,14 +363,11 @@ def analyze_followers(user_id, api):
     else:
         follower_id_sample = follower_ids
 
-    users = []
-    for ids in batch(follower_id_sample, 100):
-        users.extend(api.UsersLookup(ids))
-
+    users = fetch_users(follower_id_sample, api, cache)
     return analyze_users(users, ids_fetched=len(follower_ids))
 
 
-def analyze_timeline(list_id, api):
+def analyze_timeline(list_id, api, cache):
     # Timeline-functions are limited to 200 statuses
     if list_id is not None:
         statuses = api.GetListTimeline(list_id=list_id, count=200)
@@ -351,10 +380,7 @@ def analyze_timeline(list_id, api):
 
     # Reduce to unique list of ids
     timeline_ids = list(set(timeline_ids))
-
-    users = []
-    users.extend(api.UsersLookup(timeline_ids))
-
+    users = fetch_users(timeline_ids, api, cache)
     return analyze_users(users, ids_fetched=len(timeline_ids))
 
 
@@ -452,15 +478,19 @@ if __name__ == '__main__':
     print("{:>25s}\t{:>10s}\t{:>10s}\t{:>10s}\t{:>10s}".format(
         '', 'NONBINARY', 'MEN', 'WOMEN', 'UNKNOWN'))
 
+    start = time.time()
+    cache = Cache()
     if args.dry_run:
         friends, followers, timeline = dry_run_analysis()
     else:
         api = get_twitter_api(consumer_key, consumer_secret, tok, tok_secret)
-        friends = analyze_friends(user_id, None, api)
-        followers = analyze_followers(user_id, api)
-        timeline = analyze_timeline(None, api)
+        friends = analyze_friends(user_id, None, api, cache)
+        followers = analyze_followers(user_id, api, cache)
+        timeline = analyze_timeline(None, api, cache)
 
-    for user_type, an in [('friends', friends), ('followers', followers), 
+    duration = time.time() - start
+
+    for user_type, an in [('friends', friends), ('followers', followers),
                           ('timeline', timeline)]:
         nb, men, women, andy = an.nonbinary.n, an.male.n, an.female.n, an.andy.n
 
@@ -479,3 +509,7 @@ if __name__ == '__main__':
             an.declared('nonbinary'),
             an.declared('male'),
             an.declared('female')))
+
+    print("")
+    print("Analysis took {:.2f} seconds, cache hit ratio {}%".format(
+        duration, cache.hit_percentage))
