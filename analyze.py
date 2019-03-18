@@ -40,6 +40,7 @@ def make_pronoun_patterns():
                  ('non-binary', 'nonbinary'),
                  ('nonbinary', 'nonbinary'),
                  ('enby', 'nonbinary'),
+                 ('nb', 'nonbinary'),
                  ('genderqueer', 'nonbinary'),
                  ('man', 'male'),
                  ('male', 'male'),
