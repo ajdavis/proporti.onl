@@ -10,7 +10,8 @@ from analyze import (analyze_followers,
                      analyze_timeline,
                      div,
                      dry_run_analysis,
-                     get_friends_lists)
+                     get_friends_lists,
+                     get_twitter_api)
 
 logging.getLogger("requests").setLevel(logging.WARNING)
 logging.getLogger("urllib3").setLevel(logging.WARNING)
@@ -122,22 +123,12 @@ def index():
                              int(l['id']) == list_id][0]
 
             try:
-                results = {'friends': analyze_friends(form.user_id.data,
-                                                      list_id,
-                                                      CONSUMER_KEY,
-                                                      CONSUMER_SECRET,
-                                                      oauth_token,
-                                                      oauth_token_secret),
-                           'followers': analyze_followers(form.user_id.data,
-                                                          CONSUMER_KEY,
-                                                          CONSUMER_SECRET,
-                                                          oauth_token,
-                                                          oauth_token_secret),
-                           'timeline': analyze_timeline(list_id,
-                                                        CONSUMER_KEY,
-                                                        CONSUMER_SECRET,
-                                                        oauth_token,
-                                                        oauth_token_secret)}
+                api = get_twitter_api(CONSUMER_KEY, CONSUMER_SECRET,
+                                      oauth_token, oauth_token_secret)
+                results = {
+                    'friends': analyze_friends(form.user_id.data, list_id, api),
+                    'followers': analyze_followers(form.user_id.data, api),
+                    'timeline': analyze_timeline(list_id, api)}
             except Exception as exc:
                 import traceback
                 traceback.print_exc()

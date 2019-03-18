@@ -278,21 +278,13 @@ def get_friends_lists(user_id, consumer_key, consumer_secret,
     return list(process_lists())
 
 
-def analyze_self(user_id, consumer_key, consumer_secret,
-                 oauth_token, oauth_token_secret):
-    api = get_twitter_api(consumer_key, consumer_secret,
-                          oauth_token, oauth_token_secret)
-
+def analyze_self(user_id, api):
     users = api.UsersLookup(screen_name=[user_id])
 
     return analyze_user(users[0])
 
 
-def analyze_friends(user_id, list_id, consumer_key, consumer_secret,
-                    oauth_token, oauth_token_secret):
-    api = get_twitter_api(consumer_key, consumer_secret,
-                          oauth_token, oauth_token_secret)
-
+def analyze_friends(user_id, list_id, api):
     nxt = -1
     friend_ids = []
     for _ in range(MAX_GET_FRIEND_IDS_CALLS):
@@ -322,10 +314,7 @@ def analyze_friends(user_id, list_id, consumer_key, consumer_secret,
     return analyze_users(users, ids_fetched=len(friend_ids))
 
 
-def analyze_followers(user_id, consumer_key, consumer_secret,
-                      oauth_token, oauth_token_secret):
-    api = get_twitter_api(consumer_key, consumer_secret,
-                          oauth_token, oauth_token_secret)
+def analyze_followers(user_id, api):
     nxt = -1
     follower_ids = []
     for _ in range(MAX_GET_FOLLOWER_IDS_CALLS):
@@ -349,11 +338,7 @@ def analyze_followers(user_id, consumer_key, consumer_secret,
     return analyze_users(users, ids_fetched=len(follower_ids))
 
 
-def analyze_timeline(list_id, consumer_key, consumer_secret,
-                     oauth_token, oauth_token_secret):
-    api = get_twitter_api(consumer_key, consumer_secret,
-                          oauth_token, oauth_token_secret)
-
+def analyze_timeline(list_id, api):
     # Timeline-functions are limited to 200 statuses
     if list_id is not None:
         statuses = api.GetListTimeline(list_id=list_id, count=200)
@@ -457,8 +442,9 @@ if __name__ == '__main__':
         if args.dry_run:
             g, declared = 'male', True
         else:
-            g, declared = analyze_self(user_id, consumer_key, consumer_secret,
-                                       tok, tok_secret)
+            api = get_twitter_api(
+                consumer_key, consumer_secret, tok, tok_secret)
+            g, declared = analyze_self(user_id, api)
 
         print('{} ({})'.format(g, 'declared pronoun' if declared else 'guess'))
         sys.exit()
@@ -469,12 +455,10 @@ if __name__ == '__main__':
     if args.dry_run:
         friends, followers, timeline = dry_run_analysis()
     else:
-        friends = analyze_friends(user_id, None, consumer_key, consumer_secret,
-                                  tok, tok_secret)
-        followers = analyze_followers(user_id, consumer_key, consumer_secret,
-                                      tok, tok_secret)
-        timeline = analyze_timeline(None, consumer_key, consumer_secret,
-                                      tok, tok_secret)
+        api = get_twitter_api(consumer_key, consumer_secret, tok, tok_secret)
+        friends = analyze_friends(user_id, None, api)
+        followers = analyze_followers(user_id, api)
+        timeline = analyze_timeline(None, api)
 
     for user_type, an in [('friends', friends), ('followers', followers), 
                           ('timeline', timeline)]:
