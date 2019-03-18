@@ -97,8 +97,10 @@ def index():
     oauth_token, oauth_token_secret = session.get('twitter_token', (None, None))
     form = AnalyzeForm(request.form)
     if session.get('lists'):
-        form.lst.choices = [('none', 'No list')] + [
-            (unicode(l['id']), l['name']) for l in session['lists']]
+        form.lst.choices = (
+           [('none', 'No list')]
+           + [(unicode(l['id']), l['name']) for l in session['lists']]
+        )
     else:
         del form.lst
 
@@ -107,11 +109,11 @@ def index():
     if request.method == 'POST' and form.validate() and form.user_id.data:
         # Don't show auth'ed user's lists in results for another user.
         if (hasattr(form, 'lst')
-            and form.user_id.data != session.get('twitter_user')):
+                and form.user_id.data != session.get('twitter_user')):
             del form.lst
 
         if app.config['DRY_RUN']:
-            list_name = list_id = None
+            list_name = None
             friends, followers, timeline = dry_run_analysis()
             results = {'friends': friends,
                        'followers': followers,
