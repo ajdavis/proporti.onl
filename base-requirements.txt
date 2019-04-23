@@ -1,6 +1,7 @@
 flask
 flask-oauth
 python-twitter
+requests
 SexMachine
 unidecode
 WTForms
