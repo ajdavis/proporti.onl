@@ -368,7 +368,7 @@ def analyze_followers(user_id, api, cache):
     return analyze_users(users, ids_fetched=len(follower_ids))
 
 
-def analyze_timeline(list_id, api, cache):
+def analyze_timeline(user_id, list_id, api, cache):
     # Timeline-functions are limited to 200 statuses
     if list_id is not None:
         statuses = api.GetListTimeline(list_id=list_id, count=200)
@@ -377,7 +377,9 @@ def analyze_timeline(list_id, api, cache):
 
     timeline_ids = []
     for s in statuses:
-        timeline_ids.append(s.user.id)
+        # Skip the current user's own tweets.
+        if s.user.screen_name != user_id:
+            timeline_ids.append(s.user.id)
 
     # Reduce to unique list of ids
     timeline_ids = list(set(timeline_ids))
@@ -487,7 +489,7 @@ if __name__ == '__main__':
         api = get_twitter_api(consumer_key, consumer_secret, tok, tok_secret)
         friends = analyze_friends(user_id, None, api, cache)
         followers = analyze_followers(user_id, api, cache)
-        timeline = analyze_timeline(None, api, cache)
+        timeline = analyze_timeline(user_id, None, api, cache)
 
     duration = time.time() - start
 

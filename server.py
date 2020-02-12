@@ -135,7 +135,7 @@ def index():
                     'followers': analyze_followers(
                         form.user_id.data, api, cache),
                     'timeline': analyze_timeline(
-                        list_id, api, cache)}
+                        form.user_id.data, list_id, api, cache)}
             except Exception as exc:
                 import traceback
                 traceback.print_exc()
