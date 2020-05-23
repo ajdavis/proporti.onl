@@ -18,6 +18,11 @@ os.system(
     "rsync -rv --exclude '*.pyc' *"
     " emptysquare@ssh.pythonanywhere.com:www.proporti.onl/")
 
+print("Reinstall dependencies....")
+os.system(
+    "ssh emptysquare@ssh.pythonanywhere.com"
+    " '~/my-venv/bin/pip install -U -r ~/www.proporti.onl/requirements.txt'")
+
 print("Restarting....")
 uri = 'https://www.pythonanywhere.com/api/v0/user/{uname}/webapps/{dom}/reload/'
 response = requests.post(
