@@ -17,5 +17,5 @@ requests-oauthlib==1.0.0
 SexMachine==0.1.1
 Unidecode==1.0.23
 urllib3==1.24.2
-Werkzeug==0.15.3
+Werkzeug==0.15.4
 WTForms==2.2.1
