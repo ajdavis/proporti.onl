@@ -60,7 +60,7 @@ def login():
 def logout():
     session.pop('twitter_token')
     session.pop('twitter_user')
-    flash(u'Logged out.')
+    flash('Logged out.')
     return redirect('/')
 
 
@@ -69,7 +69,7 @@ def logout():
 def oauth_authorized(resp):
     next_url = request.args.get('next') or '/'
     if resp is None:
-        flash(u'You denied the request to sign in.')
+        flash('You denied the request to sign in.')
         return redirect(next_url)
 
     session['twitter_token'] = (resp['oauth_token'], resp['oauth_token_secret'])
@@ -84,7 +84,7 @@ def oauth_authorized(resp):
         app.logger.exception("Error in get_friends_lists, ignoring")
         session['lists'] = []
 
-    flash(u'You were signed in as %s' % resp['screen_name'])
+    flash('You were signed in as %s' % resp['screen_name'])
     return redirect(next_url)
 
 
@@ -100,7 +100,7 @@ def index():
     if session.get('lists'):
         form.lst.choices = (
             [('none', 'No list')]
-            + [(unicode(l['id']), l['name']) for l in session['lists']]
+            + [(str(l['id']), l['name']) for l in session['lists']]
         )
     else:
         del form.lst

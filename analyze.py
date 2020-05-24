@@ -414,7 +414,7 @@ def get_access_token(consumer_key, consumer_secret):
           '\n\t{0}'.format(url))
 
     webbrowser.open(url)
-    pincode = raw_input('\nEnter your pincode? ')
+    pincode = input('\nEnter your pincode? ')
 
     print('\nGenerating and signing request for an access token...\n')
 
@@ -457,10 +457,10 @@ if __name__ == '__main__':
     [user_id] = args.user_id
 
     consumer_key = (os.environ.get('CONSUMER_KEY') or
-                    raw_input('Enter your consumer key: '))
+                    input('Enter your consumer key: '))
 
     consumer_secret = (os.environ.get('CONSUMER_SECRET') or
-                       raw_input('Enter your consumer secret: '))
+                       input('Enter your consumer secret: '))
 
     if args.dry_run:
         tok, tok_secret = None, None
