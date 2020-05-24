@@ -1,5 +1,5 @@
+Authlib
 flask
-flask-oauth
 python-twitter
 requests
 SexMachine

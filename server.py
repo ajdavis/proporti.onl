@@ -1,8 +1,14 @@
 import logging
 import os
 
-from flask import Flask, flash, redirect, render_template, request, session
-from flask_oauth import OAuth
+from authlib.integrations.flask_client import OAuth, OAuthError
+from flask import (Flask,
+                   flash,
+                   redirect,
+                   render_template,
+                   request,
+                   session,
+                   url_for)
 from wtforms import Form, StringField, SelectField
 
 from analyze import (analyze_followers,
@@ -17,43 +23,38 @@ from analyze import (analyze_followers,
 logging.getLogger("requests").setLevel(logging.WARNING)
 logging.getLogger("urllib3").setLevel(logging.WARNING)
 
-app = Flask('twitter-gender-proportion')
-app.config['SECRET_KEY'] = os.environ['COOKIE_SECRET']
-app.config['DRY_RUN'] = False
-
 CONSUMER_KEY = os.environ.get('CONSUMER_KEY')
 CONSUMER_SECRET = os.environ.get('CONSUMER_SECRET')
 TRACKING_ID = os.environ.get('TRACKING_ID')
 
-oauth = OAuth()
-twitter = oauth.remote_app(
-    'twitter',
-    base_url='https://api.twitter.com/1/',
+if not (CONSUMER_KEY and CONSUMER_SECRET):
+    raise ValueError(
+        "Must set CONSUMER_KEY and CONSUMER_SECRET environment variables")
+
+app = Flask('twitter-gender-proportion')
+app.config['SECRET_KEY'] = os.environ['COOKIE_SECRET']
+app.config['DRY_RUN'] = False
+app.config['TWITTER_CLIENT_ID'] = CONSUMER_KEY
+app.config['TWITTER_CLIENT_SECRET'] = CONSUMER_SECRET
+
+oauth = OAuth(app)
+oauth.register(
+    name='twitter',
+    api_base_url='https://api.twitter.com/1.1/',
     request_token_url='https://api.twitter.com/oauth/request_token',
     access_token_url='https://api.twitter.com/oauth/access_token',
     authorize_url='https://api.twitter.com/oauth/authenticate',
-    consumer_key=os.environ['CONSUMER_KEY'],
-    consumer_secret=os.environ['CONSUMER_SECRET'])
+    fetch_token=lambda: session.get('token'),  # DON'T DO IT IN PRODUCTION
+    consumer_key=CONSUMER_KEY,
+    consumer_secret=CONSUMER_SECRET)
 
-
-@twitter.tokengetter
-def get_twitter_token(token=None):
-    return session.get('twitter_token')
+twitter = oauth.twitter
 
 
 @app.route('/login')
 def login():
-    callback = '/authorized'
-    next_url = request.args.get('next') or request.referrer
-    if next_url:
-        callback += '?next=' + next_url
-
-    # This has been particularly flakey.
-    try:
-        return twitter.authorize(callback=callback)
-    except Exception:
-        app.logger.exception("Error in twitter.authorize, retrying")
-        return twitter.authorize(callback=callback)
+    redirect_uri = url_for('oauth_authorized', _external=True)
+    return oauth.twitter.authorize_redirect(redirect_uri)
 
 
 @app.route('/logout')
@@ -64,28 +65,31 @@ def logout():
     return redirect('/')
 
 
-@app.route('/authorized')
-@twitter.authorized_handler
-def oauth_authorized(resp):
-    next_url = request.args.get('next') or '/'
-    if resp is None:
-        flash('You denied the request to sign in.')
-        return redirect(next_url)
+@app.errorhandler(OAuthError)
+def handle_error(error):
+    flash('You denied the request to sign in.')
+    return redirect('/')
 
-    session['twitter_token'] = (resp['oauth_token'], resp['oauth_token_secret'])
-    session['twitter_user'] = resp['screen_name']
+
+@app.route('/authorized')
+def oauth_authorized():
+    token = oauth.twitter.authorize_access_token()
+    resp = oauth.twitter.get('account/verify_credentials.json')
+    profile = resp.json()
+    session['twitter_token'] = (token['oauth_token'], token['oauth_token_secret'])
+    session['twitter_user'] = profile['screen_name']
     try:
-        session['lists'] = get_friends_lists(resp['screen_name'],
+        session['lists'] = get_friends_lists(profile['screen_name'],
                                              CONSUMER_KEY,
                                              CONSUMER_SECRET,
-                                             resp['oauth_token'],
-                                             resp['oauth_token_secret'])
+                                             token['oauth_token'],
+                                             token['oauth_token_secret'])
     except Exception:
         app.logger.exception("Error in get_friends_lists, ignoring")
         session['lists'] = []
 
-    flash('You were signed in as %s' % resp['screen_name'])
-    return redirect(next_url)
+    flash('You were signed in as %s' % profile['screen_name'])
+    return redirect('/')
 
 
 class AnalyzeForm(Form):
