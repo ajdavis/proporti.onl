@@ -20,10 +20,10 @@ Men."](https://emptysqua.re/blog/gender-of-twitter-users-i-follow/)**
 Install
 -------
 
-This script requires Python 2.7, and the packages listed in `requirements.txt`.
+This script requires Python 3, and the packages listed in `requirements.txt`.
 
 ```
-python2.7 -m pip install -r requirements.txt
+python3 -m pip install -r requirements.txt
 ```
 
 Command-line Use
@@ -32,7 +32,7 @@ Command-line Use
 Pass a Twitter username to analyze the user's friends and followers:
 
 ```
-python2.7 analyze.py jessejiryudavis
+python3 analyze.py jessejiryudavis
 ```
 
 Test
@@ -41,7 +41,7 @@ Test
 From the repository root directory:
 
 ```
-python2.7 -m unittest discover -v
+python3 -m unittest discover -v
 ```
 
 Website
@@ -50,5 +50,5 @@ Website
 Start a Flask server for testing:
 
 ```
-CONSUMER_KEY=foo CONSUMER_SECRET=bar COOKIE_SECRET=baz python2.7 server.py 8000
+CONSUMER_KEY=foo CONSUMER_SECRET=bar COOKIE_SECRET=baz python3 server.py 8000
 ```
