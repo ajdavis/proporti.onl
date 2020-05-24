@@ -2,7 +2,6 @@ import os
 import pickle
 import random
 import re
-import string
 import sys
 import time
 import warnings
@@ -28,12 +27,8 @@ def split(s):
         return s
 
 
-allchars = string.maketrans('', '')
-nonletter = allchars.translate(allchars, string.letters).replace(' ', '')
-
-
-def rm_punctuation(s):
-    return string.translate(s.encode("utf-8"), None, nonletter).strip()
+def rm_punctuation(s, _pat=re.compile(r'\W+')):
+    return _pat.sub(' ', s)
 
 
 def make_pronoun_patterns():
