@@ -8,7 +8,7 @@ import warnings
 import webbrowser
 
 import twitter  # pip install python-twitter
-import sexmachine.detector as gender  # pip install SexMachine
+import gender_guesser.detector as gender  # pip install gender-guesser
 from requests_oauthlib import OAuth1Session
 from unidecode import unidecode  # pip install unidecode
 
@@ -192,7 +192,8 @@ class Analysis(object):
         self.ids_fetched = ids_fetched
 
     def update(self, gender, declared):
-        attr = getattr(self, gender)
+        # Elide gender-unknown and androgynous names.
+        attr = getattr(self, 'andy' if gender == 'unknown' else gender)
         attr.n += 1
         if declared:
             attr.n_declared += 1

@@ -1,7 +1,7 @@
 Authlib
 flask
+gender-guesser
 python-twitter
 requests
-SexMachine
 unidecode
 WTForms
