@@ -21,7 +21,7 @@ os.system(
 print("Reinstall dependencies....")
 os.system(
     "ssh emptysquare@ssh.pythonanywhere.com"
-    " '~/my-venv/bin/pip install -U -r ~/www.proporti.onl/requirements.txt'")
+    " '~/my-venv3/bin/pip install -U -r ~/www.proporti.onl/requirements.txt'")
 
 print("Restarting....")
 uri = 'https://www.pythonanywhere.com/api/v0/user/{uname}/webapps/{dom}/reload/'
