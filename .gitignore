@@ -90,4 +90,4 @@ ENV/
 .ropeproject
 
 # Jesse's additions to .gitignore template for this project
-friends.pickle
+detector.pickle
