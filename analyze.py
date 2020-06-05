@@ -383,6 +383,39 @@ def analyze_timeline(user_id, list_id, api, cache):
     return analyze_users(users, ids_fetched=len(timeline_ids))
 
 
+def analyze_my_timeline(user_id, api, cache):
+    # Timeline-functions are limited to 200 statuses
+    statuses = api.GetUserTimeline(screen_name=user_id, count=200, include_rts=True, trim_user=False, exclude_replies=False)
+    max_id = 0
+    for i in range(1, 10):                        # end of range is exclusive so this only goes to 9, so max 2,000 tweets
+        if max_id == statuses[-1].id - 1:         # to prevent excessive API calls if already exhausted
+            break
+        max_id = statuses[-1].id - 1              # passing max_id skips newest tweets so we can page back in the timeline
+        statuses = statuses + api.GetUserTimeline(screen_name=user_id, count=200, max_id=max_id, include_rts=True, trim_user=False, exclude_replies=False)
+    retweet_ids = []
+    reply_ids = []
+    quotes_ids = []
+    timeline_ids = []
+    for s in statuses:
+        if s.retweeted_status is not None:
+            retweet_ids.append(s.retweeted_status.user.id)
+        elif s.in_reply_to_status_id is not None:
+            for i in s.user_mentions:
+                reply_ids.append(i.id)
+        elif s.quoted_status is not None:
+            quotes_ids.append(s.quoted_status.user.id)
+        elif len(s.user_mentions) > 0:
+            for i in s.user_mentions:
+                timeline_ids.append(i.id)
+
+    outdict = {'retweets': retweet_ids, 'replies': reply_ids, 'quotes': quotes_ids, 'mentions': timeline_ids}
+    newdict = {}
+    for ids in outdict.keys():
+        users = fetch_users(outdict.get(ids), api, cache)
+        newdict[ids] = analyze_users(users, ids_fetched=len(outdict.get(ids)))
+    return newdict
+
+
 # From https://github.com/bear/python-twitter/blob/master/get_access_token.py
 def get_access_token(consumer_key, consumer_secret):
     REQUEST_TOKEN_URL = 'https://api.twitter.com/oauth/request_token'
@@ -486,11 +519,17 @@ if __name__ == '__main__':
         friends = analyze_friends(user_id, None, api, cache)
         followers = analyze_followers(user_id, api, cache)
         timeline = analyze_timeline(user_id, None, api, cache)
+        mytimeline = analyze_my_timeline(user_id, api, cache)
+        retweets = mytimeline.get('retweets')
+        replies = mytimeline.get('replies')
+        quotes = mytimeline.get('quotes')
+        mentions = mytimeline.get('mentions')
 
     duration = time.time() - start
 
     for user_type, an in [('friends', friends), ('followers', followers),
-                          ('timeline', timeline)]:
+                          ('timeline', timeline), ('retweets', retweets),
+                          ('replies', replies), ('quotes', quotes), ('mentions', mentions)]:
         nb, men, women, andy = an.nonbinary.n, an.male.n, an.female.n, an.andy.n
 
         print("{:>25s}\t{:>10.2f}%\t{:10.2f}%\t{:10.2f}%".format(
