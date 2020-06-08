@@ -387,10 +387,12 @@ def analyze_my_timeline(user_id, api, cache):
     # Timeline-functions are limited to 200 statuses
     statuses = api.GetUserTimeline(screen_name=user_id, count=200, include_rts=True, trim_user=False, exclude_replies=False)
     max_id = 0
-    for i in range(1, 10):                        # end of range is exclusive so this only goes to 9, so max 2,000 tweets
-        if max_id == statuses[-1].id - 1:         # to prevent excessive API calls if already exhausted
+    # Max 2000 tweets.
+    for i in range(1, 10):
+        if max_id == statuses[-1].id - 1:
+            # Already fetched all tweets in timeline.
             break
-        max_id = statuses[-1].id - 1              # passing max_id skips newest tweets so we can page back in the timeline
+        max_id = statuses[-1].id - 1
         statuses = statuses + api.GetUserTimeline(screen_name=user_id, count=200, max_id=max_id, include_rts=True, trim_user=False, exclude_replies=False)
     retweet_ids = []
     reply_ids = []
