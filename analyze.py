@@ -382,14 +382,16 @@ def analyze_timeline(user_id, list_id, api, cache):
     users = fetch_users(timeline_ids, api, cache)
     return analyze_users(users, ids_fetched=len(timeline_ids))
 
+
 def analyze_my_timeline(user_id, api, cache):
     # Timeline-functions are limited to 200 statuses
     statuses = api.GetUserTimeline(screen_name=user_id, count=200, include_rts=True, trim_user=False, exclude_replies=False)
-    maxt = 0
-    for i in range(1, 10): #end of range is exclusive so this only goes to 9, so we're looking at max 2,000 tweets
-        if not maxt == statuses[-1].id - 1: #to prevent excessive API calls if already exhausted
-            maxt = statuses[-1].id - 1
-            statuses = statuses + api.GetUserTimeline(screen_name=user_id, count=200, max_id=maxt, include_rts=True, trim_user=False, exclude_replies=False)    
+    max_id = 0
+    for i in range(1, 10):                        # end of range is exclusive so this only goes to 9, so max 2,000 tweets
+        if max_id == statuses[-1].id - 1:         # to prevent excessive API calls if already exhausted
+            break
+        max_id = statuses[-1].id - 1              # passing max_id skips newest tweets so we can page back in the timeline
+        statuses = statuses + api.GetUserTimeline(screen_name=user_id, count=200, max_id=max_id, include_rts=True, trim_user=False, exclude_replies=False)
     retweet_ids = []
     reply_ids = []
     quotes_ids = []
@@ -406,12 +408,13 @@ def analyze_my_timeline(user_id, api, cache):
             for i in s.user_mentions:
                 timeline_ids.append(i.id)
 
-    outdict = {'retweets':retweet_ids, 'replies':reply_ids, 'quotes':quotes_ids, 'mentions':timeline_ids}
+    outdict = {'retweets': retweet_ids, 'replies': reply_ids, 'quotes': quotes_ids, 'mentions': timeline_ids}
     newdict = {}
     for ids in outdict.keys():
         users = fetch_users(outdict.get(ids), api, cache)
         newdict[ids] = analyze_users(users, ids_fetched=len(outdict.get(ids)))
     return newdict
+
 
 # From https://github.com/bear/python-twitter/blob/master/get_access_token.py
 def get_access_token(consumer_key, consumer_secret):
