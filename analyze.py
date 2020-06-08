@@ -528,9 +528,8 @@ if __name__ == '__main__':
     duration = time.time() - start
 
     for user_type, an in [('friends', friends), ('followers', followers),
-                          ('timeline', timeline)
-                          ,('retweets', retweets), ('replies', replies), ('quotes', quotes), ('mentions', mentions) 
-                         ]:
+                          ('timeline', timeline), ('retweets', retweets),
+                          ('replies', replies), ('quotes', quotes), ('mentions', mentions)]:
         nb, men, women, andy = an.nonbinary.n, an.male.n, an.female.n, an.andy.n
 
         print("{:>25s}\t{:>10.2f}%\t{:10.2f}%\t{:10.2f}%".format(
