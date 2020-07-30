@@ -96,6 +96,11 @@ td.td-first-col {
   document.addEventListener('DOMContentLoaded', function() {
     var userid = document.getElementById("user_id");
     var lst = document.getElementById("lst");
+    if (userid === null || lst === null) {
+      // Not logged in to Twitter.
+      return;
+    }
+
     userid.onkeyup = function() {
       /* if the auth'ed user has Twitter lists but a different user name is in
        * the text box, hide the lists */
