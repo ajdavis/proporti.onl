@@ -276,7 +276,7 @@ def get_twitter_api(consumer_key, consumer_secret, oauth_token, oauth_token_secr
     )
 
 
-# 500 ids per call.
+# 5000 ids per call.
 MAX_GET_FRIEND_IDS_CALLS = 10
 MAX_GET_FOLLOWER_IDS_CALLS = 10
 
