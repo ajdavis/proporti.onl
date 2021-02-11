@@ -20,7 +20,7 @@ Men."](https://emptysqua.re/blog/gender-of-twitter-users-i-follow/)**
 Install
 -------
 
-This script requires Python 3, and the packages listed in `requirements.txt`.
+This script requires Python 3.8, and the packages listed in `requirements.txt`.
 
 ```
 python3 -m pip install -r requirements.txt
