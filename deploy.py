@@ -25,7 +25,7 @@ os.system(
 print("Reinstall dependencies....")
 os.system(
     "ssh emptysquare@ssh.pythonanywhere.com"
-    " '~/my-venv3/bin/pip install -U -r ~/www.proporti.onl/requirements.txt'"
+    " '~/proporti.onl.venv/bin/pip install -U -r ~/www.proporti.onl/requirements.txt'"
 )
 
 print("Restarting....")
