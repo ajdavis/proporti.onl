@@ -178,7 +178,7 @@ td.td-first-col {
     {% if results %}
       <h2>Results for @{{ form.user_id.data }}</h2>
       <p>
-        Sampled {{ results.friends.ids_sampled }} people you follow{% if list_name %} in list"{{ list_name }}" {% endif %}, {{ results.followers.ids_sampled }} followers and {{ results.timeline.ids_sampled }} users from the latest 200 tweets in your timeline.
+        Sampled {{ results.friends.ids_sampled }} people @{{ form.user_id.data }} follows{% if list_name %} in list"{{ list_name }}" {% endif %}, {{ results.followers.ids_sampled }} followers and {{ results.timeline.ids_sampled }} users from the latest 200 tweets in @{{ form.user_id.data }}&#39;s timeline.
         Gender estimate based on {{ results.friends.declared() + results.followers.declared() + results.timeline.declared() }} Twitter bios with declared pronouns like "she/her" and {{ results.friends.guessed() + results.followers.guessed() + results.timeline.guessed() }} genders guessed from first names.
       </p>
       <table class="table" style="table-layout: fixed; white-space: nowrap">
