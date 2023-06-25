@@ -1,0 +1,159 @@
+<html><head>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+<title>Proporti.onl: Gender distribution of People You Follow and Followers on Twitter</title>
+<link rel="shortcut icon" href="//static/favicon.png" type="image/png">
+<style type="text/css">
+/* override Bootstrap */
+.table>tbody>tr>td {
+  vertical-align: middle;
+}
+.row {
+  margin-bottom: 1em;
+}
+td.td-important {
+  font-weight: bold;
+  font-size: x-large;
+}
+td.td-first-col {
+  font-weight: bold;
+  font-size: large;
+}
+.alert-container {
+  max-height: 100px;
+  overflow: hidden;
+  transition-property: all;
+  transition-duration: .5s;
+  transition-timing-function: cubic-bezier(0, 1, 0.5, 1);
+}
+
+.alert-container-disappear {
+  max-height: 0;
+}
+
+.glyphicon.spinning {
+  animation: spin 1s infinite linear;
+  -webkit-animation: spin2 1s infinite linear;
+}
+
+@keyframes spin {
+    from { transform: scale(1) rotate(0deg); }
+    to { transform: scale(1) rotate(360deg); }
+}
+
+@-webkit-keyframes spin2 {
+    from { -webkit-transform: rotate(0deg); }
+    to { -webkit-transform: rotate(360deg); }
+}
+</style>
+</head>
+<body>
+
+
+<script type="text/javascript" async="" src="https://www.googletagmanager.com/gtag/js?id=G-LQK86MYSVJ&amp;cx=c&amp;_slc=1"></script><script async="" src="https://www.google-analytics.com/analytics.js"></script><script type="application/javascript">
+  function close_alert(target) {
+    var alertDiv = target.parentElement.parentElement;
+    alertDiv.classList.add('alert-container-disappear');
+  }
+
+  function analyze_click() {
+    var button = document.getElementById("analyze-button");
+    button.disabled = true;
+
+    var user_id = document.getElementById("user_id");
+    user_id.readOnly = true;
+
+    var text = document.getElementById("analyze-button-text");
+    text.style.display = 'none';
+
+    var loading = document.getElementById("analyze-loading");
+    loading.style.display = 'block';
+
+    return true;
+  }
+
+  function close_alerts() {
+    var alerts = document.getElementsByClassName('alert-container');
+    for (var i = 0; i < alerts.length; i++) {
+      alerts[i].classList.add('alert-container-disappear');
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    var userid = document.getElementById("user_id");
+    var lst = document.getElementById("lst");
+    if (userid === null || lst === null) {
+      // Not logged in to Twitter.
+      return;
+    }
+
+    userid.onkeyup = function() {
+      /* if the auth'ed user has Twitter lists but a different user name is in
+       * the text box, hide the lists */
+      if (lst !== null) {
+        lst.disabled = (userid.value !== "");
+      }
+    };
+
+    setTimeout(close_alerts, 8000);
+  }, false);
+</script>
+
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-md-8 col-md-offset-1">
+
+
+
+
+          <div class="alert-container">
+          <div class="alert alert-info">
+            I shut down this tool 2023-06-25 because Twitter cancelled free API access.<br>
+            If you want to port it to Mastodon, knock yourself out.&nbsp;&nbsp;&mdash;Jesse
+          </div>
+          </div>
+
+
+
+
+
+    <h1>Proport<span style="letter-spacing: -0.02em">i</span><span style="color: #b4b4b4; letter-spacing: -0.06em" "="">.</span>onl</h1>
+    <h1 class="lead">Estimate the gender distribution of your followers and those you follow,<br>
+      based on their profile descriptions or first names.</h1>
+    <p><a href="https://www.theguardian.com/technology/2016/oct/04/twitter-women-gender-elon-musk-tim-cook">Many tech leaders follow mostly men</a>, but I want to follow a diverse group of people.</p>
+    <p>Twitter Analytics doesn't tell me the gender distribution of those I follow, and it doesn't try to identify gender-nonbinary people.
+      So I built this tool for myself and <a href="https://github.com/ajdavis/twitter-gender-distribution/">put it on GitHub</a>. It's inaccurate and it undercounts nonbinary folk, but it's better than making no effort at all.
+    </p>
+    <p>I want you to be able to do this, too. Estimate the distribution of those you follow and see if there's room to improve!</p>
+    <hr>
+
+
+      <a href="#" class="btn btn-primary">Log in with Twitter</a>
+
+
+
+
+
+
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-8 col-md-offset-1">
+      <div style="color: #9f9f9f; margin-top: 1.5em">
+        <p>You must log in to prevent Twitter from rate-limiting this tool. I access only your public information, and nothing is stored.</p>
+
+      </div>
+      <h5><a href="https://emptysqua.re/blog/gender-of-twitter-users-i-follow/">About the algorithm.</a></h5>
+    </div>
+  </div>
+</div>
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-41411917-3', 'auto');
+  ga('send', 'pageview');
+
+</script>
+</body></html>
