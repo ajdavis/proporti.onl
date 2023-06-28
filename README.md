@@ -1,6 +1,8 @@
 Gender Distribution of Twitter Friends and Followers
 ====================================================
 
+I retired this tool and archived this repository after Elon Musk shut down free Twitter API access.
+
 [Twitter analytics](https://analytics.twitter.com) estimates the gender ratio of
 your followers, but it doesn't tell you about those you follow--your
 Twitter "friends"--and it doesn't let you analyze other people's friends and
